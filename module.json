@@ -4,28 +4,49 @@
   "description": "A simple quest log as a journal page type: objectives you reveal step by step, a GM brief per quest, and a Quest Log window for everyone. Built for White Signal (Daggerheart).",
   "version": "0.1.1",
   "authors": [
-    { "name": "Chezzy" }
+    {
+      "name": "Chezzy"
+    }
   ],
   "compatibility": {
     "minimum": "14",
     "verified": "14.365",
     "maximum": "14"
   },
-  "esmodules": ["scripts/main.mjs"],
-  "styles": ["styles/quest-log.css"],
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "styles/quest-log.css"
+  ],
   "languages": [
-    { "lang": "en", "name": "English", "path": "lang/en.json" },
-    { "lang": "de", "name": "Deutsch", "path": "lang/en.json" }
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "de",
+      "name": "Deutsch",
+      "path": "lang/en.json"
+    }
   ],
   "socket": true,
   "documentTypes": {
     "JournalEntryPage": {
       "quest": {
-        "htmlFields": ["description"],
+        "htmlFields": [
+          "description"
+        ],
         "filePathFields": {
-          "giver.img": ["IMAGE"]
+          "giver.img": [
+            "IMAGE"
+          ]
         }
       }
     }
-  }
+  },
+  "url": "https://github.com/ichezzy/motherboard-quest-log",
+  "manifest": "https://github.com/ichezzy/motherboard-quest-log/releases/latest/download/module.json",
+  "download": "https://github.com/ichezzy/motherboard-quest-log/releases/download/v0.1.1/motherboard-quest-log.zip"
 }

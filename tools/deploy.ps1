@@ -1,11 +1,11 @@
 <#
-  Copy Motherboard: Quest Log to the Foundry server (Hetzner, SSH host "aetherion").
+  Copy Motherboard: Quest Log to the Foundry server (via SSH).
 
   Run from the repo folder:
     powershell -ExecutionPolicy Bypass -File tools\deploy.ps1
 
   The target lives in tools\target.txt (not in git), e.g.
-    aetherion:/srv/foundry/Data/modules/motherboard-quest-log
+    myserver:/srv/foundry/Data/modules/motherboard-quest-log
   The last folder name must be the module id from module.json.
 
   Steps: tests -> copy only the module files to a staging folder ->
@@ -23,7 +23,7 @@ $manifest = Get-Content module.json -Raw -Encoding UTF8 | ConvertFrom-Json
 $moduleId = $manifest.id
 if (-not $Target) {
   $targetFile = Join-Path $PSScriptRoot "target.txt"
-  if (-not (Test-Path $targetFile)) { throw "No target. Create tools\target.txt (e.g. aetherion:/path/Data/modules/$moduleId)." }
+  if (-not (Test-Path $targetFile)) { throw "No target. Create tools\target.txt (e.g. myserver:/path/Data/modules/$moduleId)." }
   $Target = (Get-Content $targetFile -TotalCount 1).Trim()
 }
 if ($Target -notmatch ('^([^:]+):(/.+/modules/' + [regex]::Escape($moduleId) + ')$')) { throw "Target must look like host:/.../modules/$moduleId - got: $Target" }

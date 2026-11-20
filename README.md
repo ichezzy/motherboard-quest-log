@@ -7,9 +7,25 @@ Foundry VTT module for *White Signal* (Daggerheart, Foundryborne). Module id `mo
 - The page type is stored as `motherboard-quest-log.quest`.
 - Interface language: English.
 
-## Installation on the server
+## Installation
 
-1. Once: create `tools\target.txt` with the target, e.g. `aetherion:/srv/foundry/Data/modules/motherboard-quest-log`.
+In Foundry: *Add-on Modules → Install Module*, paste this manifest URL and install:
+
+```
+https://github.com/ichezzy/motherboard-quest-log/releases/latest/download/module.json
+```
+
+Updates: *Setup → Add-on Modules → Check for Updates*.
+
+## Publishing a version
+
+Double-click **`Quest Log veröffentlichen.bat`** (console in German). It runs the tests, shows the next version and the changes since the last release, asks, then writes version and links into `module.json`, builds the ZIP, commits, tags, pushes and creates the GitHub release with `module.json` and the ZIP. The version in `module.json` is used as long as it has no release yet; otherwise the patch number goes up by one. Needs `git`, `node` and the GitHub CLI `gh` (logged in).
+
+## Test copies straight to the server
+
+For quick tests without a release:
+
+1. Once: create `tools\target.txt` (not in git) with the target, e.g. `myserver:/srv/foundry/Data/modules/motherboard-quest-log`.
 2. From the repo folder: `powershell -ExecutionPolicy Bypass -File tools\deploy.ps1` - runs the tests and copies only the module files via `scp`.
 3. A new module needs a Foundry restart. Updates: F5 in the world is usually enough.
 
