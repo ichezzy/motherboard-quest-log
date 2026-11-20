@@ -12,6 +12,32 @@ const L = key => game.i18n.localize(key);
 /** GM brief sections opened in this session stay open when the view re-renders. */
 const openBriefs = new Set();
 
+/**
+ * May the current user open the quest giver's actor sheet? GM always; players need at least
+ * Limited on the actor. Compendium actors only for the GM (not loaded synchronously).
+ */
+function canOpenGiver(uuid) {
+  if (!uuid) return false;
+  if (game.user.isGM) return true;
+  try {
+    const actor = fromUuidSync(uuid);
+    return actor instanceof foundry.abstract.Document && actor.testUserPermission(game.user, "LIMITED");
+  } catch {
+    return false;
+  }
+}
+
+/** Open the quest giver's sheet (checks the permission again, the view may be old). */
+async function openGiver(page) {
+  const uuid = page.system.giver.uuid;
+  const actor = uuid ? await fromUuid(uuid) : null;
+  if (!actor?.testUserPermission(game.user, "LIMITED")) {
+    ui.notifications.warn("MQL.View.GiverNoAccess", { localize: true });
+    return;
+  }
+  actor.sheet.render({ force: true });
+}
+
 /** Text with Foundry links (@UUID, [[/r]] …) enriched. */
 function enrich(html, page, { secrets = false } = {}) {
   if (!html) return "";
@@ -57,7 +83,7 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     statusLabel: L(`MQL.Status.${status}`),
     statusIcon: STATUS_ICONS[status],
     statuses: isGM ? STATUSES.map(value => ({ value, label: L(`MQL.Status.${value}`), selected: value === status })) : [],
-    giver: { name: system.giver.name, img: system.giver.img },
+    giver: { name: system.giver.name, img: system.giver.img, canOpen: canOpenGiver(system.giver.uuid) },
     location: system.location ? await enrich(plainToHtml(system.location), page) : "",
     description,
     objectives,
@@ -91,13 +117,6 @@ function toggle(page, id, key) {
 export function activateQuestView(root, page) {
   if (!root || !page) return;
 
-  root.querySelector(".mql-brief")?.addEventListener("toggle", event => {
-    if (event.currentTarget.open) openBriefs.add(page.uuid);
-    else openBriefs.delete(page.uuid);
-  });
-
-  if (!game.user.isGM) return;
-
   const on = (action, fn) => {
     for (const button of root.querySelectorAll(`[data-mql-action='${action}']`)) {
       button.addEventListener("click", event => {
@@ -107,6 +126,15 @@ export function activateQuestView(root, page) {
       });
     }
   };
+
+  root.querySelector(".mql-brief")?.addEventListener("toggle", event => {
+    if (event.currentTarget.open) openBriefs.add(page.uuid);
+    else openBriefs.delete(page.uuid);
+  });
+  on("open-giver", () => openGiver(page));
+
+  if (!game.user.isGM) return;
+
   on("reveal", () => setStatus(page, "active"));
   on("hide", () => setStatus(page, "hidden"));
   on("edit", () => page.sheet.render({ force: true }));

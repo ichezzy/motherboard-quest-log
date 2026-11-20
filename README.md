@@ -27,7 +27,7 @@ Foundry VTT module for *White Signal* (Daggerheart, Foundryborne). Module id `mo
 - **Objectives** - text plus *Revealed*, *Done*, *Optional*; reorder and delete with the buttons. Players only see revealed objectives. Optional objectives don't count towards progress.
 - **GM Brief** - the eight fields of the quest profile from the Quest Guide: Hook, Who wants what, What the group can do, The twist, The choice, Reward, Consequences later, Secret.
 
-**View** (journal page and Quest Log): portrait, status, quest giver, location, progress, description, objectives. The GM additionally has:
+**View** (journal page and Quest Log): portrait, status, quest giver, location, progress, description, objectives. Name and portrait of the quest giver open the actor sheet for everyone with at least *Limited* permission on the actor (the GM always); for everyone else they are plain text. The GM additionally has:
 - **Reveal to players** / **Hide from players** and a status picker
 - a checkbox and an eye per objective: mark done, reveal one by one
 - the GM brief in a collapsible box

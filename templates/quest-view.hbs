@@ -1,11 +1,22 @@
 <article class="mql-quest" data-status="{{status}}">
   <header class="mql-quest-head">
-    {{#if giver.img}}<img class="mql-portrait" src="{{giver.img}}" alt="">{{/if}}
+    {{#if giver.img}}
+    {{#if giver.canOpen}}
+    <a class="mql-portrait-link" data-mql-action="open-giver" data-tooltip="{{localize "MQL.View.OpenGiver"}}"
+       aria-label="{{localize "MQL.View.OpenGiver"}}: {{giver.name}}"><img class="mql-portrait" src="{{giver.img}}" alt=""></a>
+    {{else}}
+    <img class="mql-portrait" src="{{giver.img}}" alt="">
+    {{/if}}
+    {{/if}}
     <div class="mql-quest-titles">
       {{#if showTitle}}<h{{headingLevel}} class="mql-quest-name">{{name}}</h{{headingLevel}}>{{/if}}
       <div class="mql-meta">
         <span class="mql-status" data-status="{{status}}"><i class="{{statusIcon}}" inert></i> {{statusLabel}}</span>
-        {{#if giver.name}}<span class="mql-giver"><i class="fa-solid fa-user" inert></i> {{giver.name}}</span>{{/if}}
+        {{#if giver.name}}
+        <span class="mql-giver"><i class="fa-solid fa-user" inert></i>
+          {{#if giver.canOpen}}<a class="mql-giver-link" data-mql-action="open-giver" data-tooltip="{{localize "MQL.View.OpenGiver"}}">{{giver.name}}</a>{{else}}{{giver.name}}{{/if}}
+        </span>
+        {{/if}}
         {{#if location}}<span class="mql-location"><i class="fa-solid fa-location-dot" inert></i> <span>{{{location}}}</span></span>{{/if}}
         {{#if progress.total}}<span class="mql-progress"><i class="fa-solid fa-list-check" inert></i> {{progress.done}}/{{progress.total}}</span>{{/if}}
       </div>

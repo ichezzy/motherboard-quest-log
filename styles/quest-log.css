@@ -150,6 +150,22 @@
   border: 1px solid var(--mql-line);
   border-radius: 8px;
 }
+.mql-quest .mql-portrait-link {
+  flex: 0 0 auto;
+  display: block;
+  line-height: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mql-quest .mql-portrait-link:hover .mql-portrait,
+.mql-quest .mql-portrait-link:focus-visible .mql-portrait { border-color: var(--mql-accent); }
+.mql-quest .mql-giver-link {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+.mql-quest .mql-giver-link:hover { color: var(--mql-accent); }
 .mql-quest .mql-quest-titles { min-width: 0; }
 .mql-quest .mql-quest-name {
   margin: 0 0 0.25rem;

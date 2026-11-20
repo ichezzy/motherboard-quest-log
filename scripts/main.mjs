@@ -45,4 +45,9 @@ for (const event of ["create", "update", "delete"]) {
   });
 }
 
+// The quest giver link depends on the player's permission on the actor.
+Hooks.on("updateActor", (actor, changes) => {
+  if ("ownership" in changes) refreshQuestLog();
+});
+
 Hooks.on("renderJournalDirectory", addDirectoryButton);

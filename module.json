@@ -2,7 +2,7 @@
   "id": "motherboard-quest-log",
   "title": "Motherboard: Quest Log",
   "description": "A simple quest log as a journal page type: objectives you reveal step by step, a GM brief per quest, and a Quest Log window for everyone. Built for White Signal (Daggerheart).",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "authors": [
     { "name": "Chezzy" }
   ],
