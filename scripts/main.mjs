@@ -6,6 +6,7 @@ import { registerVisibility } from "./visibility.mjs";
 import { registerJournalSetting, createQuest } from "./journal.mjs";
 import { openQuestLog, toggleQuestLog, refreshQuestLog } from "./quest-log.mjs";
 import { addDirectoryButton } from "./directory.mjs";
+import { registerNotifications } from "./notify.mjs";
 
 Hooks.once("init", () => {
   CONFIG.JournalEntryPage.dataModels[PAGE_TYPE] = QuestData;
@@ -35,6 +36,8 @@ Hooks.once("init", () => {
   // For macros: game.modules.get("motherboard-quest-log").api.openQuestLog()
   game.modules.get(MODULE_ID).api = { openQuestLog, createQuest };
 });
+
+Hooks.once("ready", () => registerNotifications());
 
 for (const event of ["create", "update", "delete"]) {
   Hooks.on(`${event}JournalEntryPage`, page => {
