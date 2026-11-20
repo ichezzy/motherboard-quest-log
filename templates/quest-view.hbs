@@ -1,0 +1,72 @@
+<article class="mql-quest" data-status="{{status}}">
+  <header class="mql-quest-head">
+    {{#if giver.img}}<img class="mql-portrait" src="{{giver.img}}" alt="">{{/if}}
+    <div class="mql-quest-titles">
+      {{#if showTitle}}<h{{headingLevel}} class="mql-quest-name">{{name}}</h{{headingLevel}}>{{/if}}
+      <div class="mql-meta">
+        <span class="mql-status" data-status="{{status}}"><i class="{{statusIcon}}" inert></i> {{statusLabel}}</span>
+        {{#if giver.name}}<span class="mql-giver"><i class="fa-solid fa-user" inert></i> {{giver.name}}</span>{{/if}}
+        {{#if location}}<span class="mql-location"><i class="fa-solid fa-location-dot" inert></i> <span>{{{location}}}</span></span>{{/if}}
+        {{#if progress.total}}<span class="mql-progress"><i class="fa-solid fa-list-check" inert></i> {{progress.done}}/{{progress.total}}</span>{{/if}}
+      </div>
+    </div>
+  </header>
+
+  {{#if isGM}}
+  <div class="mql-gm-bar">
+    {{#if hidden}}
+    <button type="button" data-mql-action="reveal"><i class="fa-solid fa-eye" inert></i> {{localize "MQL.View.Reveal"}}</button>
+    {{else}}
+    <button type="button" data-mql-action="hide"><i class="fa-solid fa-eye-slash" inert></i> {{localize "MQL.View.Hide"}}</button>
+    {{/if}}
+    <label>
+      {{localize "MQL.Quest.FIELDS.status.label"}}
+      <select data-mql-status>
+        {{#each statuses}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+    </label>
+    <button type="button" data-mql-action="edit"><i class="fa-solid fa-pen-to-square" inert></i> {{localize "MQL.View.Edit"}}</button>
+  </div>
+  {{/if}}
+
+  {{#if description}}<section class="mql-description journal-page-content">{{{description}}}</section>{{/if}}
+
+  {{#if objectives.length}}
+  <section class="mql-objectives">
+    <h4>{{localize "MQL.View.Objectives"}}</h4>
+    <ul>
+      {{#each objectives}}
+      <li class="mql-objective {{#if done}}mql-done{{/if}} {{#unless revealed}}mql-unrevealed{{/unless}}">
+        {{#if gm}}
+        <button type="button" class="mql-icon-button" data-mql-action="toggle-done" data-id="{{id}}"
+                data-tooltip="{{localize "MQL.View.ToggleDone"}}" aria-label="{{localize "MQL.View.ToggleDone"}}">
+          <i class="{{#if done}}fa-solid fa-square-check{{else}}fa-regular fa-square{{/if}}" inert></i>
+        </button>
+        {{else}}
+        <i class="mql-check {{#if done}}fa-solid fa-square-check{{else}}fa-regular fa-square{{/if}}" inert></i>
+        {{/if}}
+        <span class="mql-objective-text">{{{html}}}</span>
+        {{#if optional}}<span class="mql-tag">{{localize "MQL.View.Optional"}}</span>{{/if}}
+        {{#if gm}}
+        <button type="button" class="mql-icon-button mql-reveal-toggle" data-mql-action="toggle-reveal" data-id="{{id}}"
+                data-tooltip="{{revealLabel}}" aria-label="{{revealLabel}}">
+          <i class="fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" inert></i>
+        </button>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
+  {{#unless hasContent}}<p class="mql-empty">{{localize "MQL.View.Empty"}}</p>{{/unless}}
+
+  {{#if brief.length}}
+  <details class="mql-brief" {{#if briefOpen}}open{{/if}}>
+    <summary><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.View.Brief"}}</summary>
+    <dl>
+      {{#each brief}}<dt>{{label}}</dt><dd>{{{html}}}</dd>{{/each}}
+    </dl>
+  </details>
+  {{/if}}
+</article>

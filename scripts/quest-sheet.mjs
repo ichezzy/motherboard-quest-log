@@ -1,5 +1,6 @@
 import { MODULE_ID, BRIEF_FIELDS } from "./constants.mjs";
 import { addObjective, removeObjective, moveObjective } from "./logic.mjs";
+import { VIEW_TEMPLATE, questContext, activateQuestView } from "./quest-view.mjs";
 
 const { JournalEntryPageHandlebarsSheet } = foundry.applications.sheets.journal;
 
@@ -27,6 +28,14 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     footer: super.EDIT_PARTS.footer
   };
 
+  /**
+   * No `root: true`: with it Foundry would only take the template's children,
+   * and the <article class="mql-quest"> the styles hang on would be lost.
+   */
+  static VIEW_PARTS = {
+    content: { template: VIEW_TEMPLATE }
+  };
+
   /** Objective whose text field gets the focus after the next render (a freshly added one). */
   #focusObjective = null;
 
@@ -36,7 +45,12 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     const page = this.document;
     const fields = page.system.schema.fields;
     context.systemFields = fields;
-    if (!this.isView) {
+    if (this.isView) {
+      Object.assign(context, await questContext(page, {
+        showTitle: page.title?.show !== false,
+        headingLevel: page.title?.level ?? 1
+      }));
+    } else {
       const source = page._source.system;
       context.giver = source.giver;
       context.hasGiver = Boolean(source.giver.uuid || source.giver.name || source.giver.img);
@@ -53,7 +67,8 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
    */
   async _onRender(context, options) {
     await super._onRender(context, options);
-    if (!this.isView) this.#activateEdit();
+    if (this.isView) activateQuestView(this.element, this.document);
+    else this.#activateEdit();
   }
 
   /* -------------------------------------------- */
