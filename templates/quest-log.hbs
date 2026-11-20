@@ -1,0 +1,40 @@
+<div class="mql-log">
+  <nav class="mql-tabs">
+    {{#each tabs}}
+    <button type="button" class="mql-tab {{#if active}}active{{/if}}" data-action="tab" data-tab="{{id}}"
+            aria-pressed="{{#if active}}true{{else}}false{{/if}}">
+      {{label}} <span class="mql-count">{{count}}</span>
+    </button>
+    {{/each}}
+    {{#if isGM}}
+    <button type="button" class="mql-new" data-action="create">
+      <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Log.New"}}
+    </button>
+    {{/if}}
+  </nav>
+
+  <div class="mql-body">
+    <ol class="mql-list-items">
+      {{#each quests}}
+      <li>
+        <button type="button" class="mql-item {{#if selected}}active{{/if}}" data-action="select" data-uuid="{{uuid}}">
+          {{#if img}}<img src="{{img}}" alt="">{{else}}<span class="mql-item-icon"><i class="fa-solid fa-scroll" inert></i></span>{{/if}}
+          <span class="mql-item-name">{{name}}</span>
+          {{#if progress}}<span class="mql-item-progress">{{progress}}</span>{{/if}}
+          <span class="mql-status" data-status="{{status}}" data-tooltip="{{statusLabel}}"><i class="{{statusIcon}}" inert></i></span>
+        </button>
+      </li>
+      {{else}}
+      <li class="mql-empty">{{empty}}</li>
+      {{/each}}
+    </ol>
+
+    <section class="mql-detail">
+      {{#if quest}}
+      {{> "modules/motherboard-quest-log/templates/quest-view.hbs" quest}}
+      {{else}}
+      <p class="mql-empty">{{localize "MQL.Log.Select"}}</p>
+      {{/if}}
+    </section>
+  </div>
+</div>
