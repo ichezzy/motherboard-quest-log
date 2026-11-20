@@ -1,0 +1,87 @@
+<div class="mql-edit">
+  {{formField systemFields.status value=source.system.status localize=true}}
+
+  <fieldset class="mql-giver-set">
+    <legend><i class="fa-solid fa-user" inert></i> {{localize "MQL.Edit.Giver"}}</legend>
+    <div class="mql-giver-row">
+      <div class="mql-giver-drop" data-mql-drop="giver" data-tooltip="{{localize "MQL.Edit.GiverDrop"}}"
+           aria-label="{{localize "MQL.Edit.GiverDrop"}}">
+        {{#if giver.img}}<img src="{{giver.img}}" alt="">{{else}}<i class="fa-solid fa-user-plus" inert></i>{{/if}}
+      </div>
+      <div class="mql-giver-fields">
+        {{formField systemFields.giver.fields.name value=giver.name}}
+        {{formField systemFields.giver.fields.img value=giver.img}}
+      </div>
+    </div>
+    <p class="hint">
+      {{localize "MQL.Edit.GiverHint"}}
+      {{#if hasGiver}}
+      <button type="button" class="mql-inline-button" data-mql-action="clear-giver">
+        <i class="fa-solid fa-xmark" inert></i> {{localize "MQL.Edit.GiverClear"}}
+      </button>
+      {{/if}}
+    </p>
+  </fieldset>
+
+  {{formField systemFields.location value=source.system.location}}
+
+  <div class="form-group stacked mql-description-group">
+    <label>{{localize "MQL.Quest.FIELDS.description.label"}}</label>
+    <prose-mirror name="system.description" value="{{source.system.description}}"
+                  data-document-uuid="{{document.uuid}}" class="mql-editor"></prose-mirror>
+    <p class="hint">{{localize "MQL.Quest.FIELDS.description.hint"}}</p>
+  </div>
+
+  <fieldset class="mql-objectives-set">
+    <legend><i class="fa-solid fa-list-check" inert></i> {{localize "MQL.Edit.Objectives"}}</legend>
+    <p class="hint">{{localize "MQL.Edit.ObjectivesHint"}}</p>
+    {{#if objectives.length}}
+    <ol class="mql-objective-rows">
+      <li class="mql-objective-head" aria-hidden="true">
+        <span>{{localize "MQL.Edit.Objective"}}</span>
+        <span>{{localize "MQL.Edit.Revealed"}}</span>
+        <span>{{localize "MQL.Edit.Done"}}</span>
+        <span>{{localize "MQL.Edit.Optional"}}</span>
+        <span></span>
+      </li>
+      {{#each objectives}}
+      <li class="mql-objective-row" data-id="{{id}}">
+        <input type="hidden" name="system.objectives.{{@index}}.id" value="{{id}}">
+        <input type="text" name="system.objectives.{{@index}}.text" value="{{text}}" data-field="text"
+               placeholder="{{localize "MQL.Edit.ObjectivePlaceholder"}}" aria-label="{{localize "MQL.Edit.Objective"}}">
+        <input type="checkbox" name="system.objectives.{{@index}}.revealed" data-field="revealed" {{checked revealed}}
+               aria-label="{{localize "MQL.Edit.Revealed"}}">
+        <input type="checkbox" name="system.objectives.{{@index}}.done" data-field="done" {{checked done}}
+               aria-label="{{localize "MQL.Edit.Done"}}">
+        <input type="checkbox" name="system.objectives.{{@index}}.optional" data-field="optional" {{checked optional}}
+               aria-label="{{localize "MQL.Edit.Optional"}}">
+        <span class="mql-row-buttons">
+          <button type="button" class="mql-icon-button" data-mql-action="move-up"
+                  data-tooltip="{{localize "MQL.Edit.MoveUp"}}" aria-label="{{localize "MQL.Edit.MoveUp"}}">
+            <i class="fa-solid fa-arrow-up" inert></i></button>
+          <button type="button" class="mql-icon-button" data-mql-action="move-down"
+                  data-tooltip="{{localize "MQL.Edit.MoveDown"}}" aria-label="{{localize "MQL.Edit.MoveDown"}}">
+            <i class="fa-solid fa-arrow-down" inert></i></button>
+          <button type="button" class="mql-icon-button" data-mql-action="delete-objective"
+                  data-tooltip="{{localize "MQL.Edit.Delete"}}" aria-label="{{localize "MQL.Edit.Delete"}}">
+            <i class="fa-solid fa-trash" inert></i></button>
+        </span>
+      </li>
+      {{/each}}
+    </ol>
+    {{else}}
+    <p class="mql-none">{{localize "MQL.Edit.NoObjectives"}}</p>
+    {{/if}}
+    <button type="button" class="mql-add" data-mql-action="add-objective">
+      <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Edit.AddObjective"}}
+    </button>
+  </fieldset>
+
+  <fieldset class="mql-brief-set">
+    <legend><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.Edit.Brief"}}</legend>
+    <p class="hint">{{localize "MQL.Edit.BriefHint"}}</p>
+    {{#each briefFields}}
+    {{formField field value=value elementType="textarea" stacked=true}}
+    {{/each}}
+  </fieldset>
+</div>
