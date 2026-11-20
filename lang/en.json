@@ -1,0 +1,144 @@
+{
+  "TYPES": {
+    "JournalEntryPage": {
+      "motherboard-quest-log": {
+        "quest": "Quest"
+      }
+    }
+  },
+  "MQL": {
+    "Title": "Quest Log",
+    "Sheet": "Quest",
+    "Status": {
+      "hidden": "Hidden",
+      "active": "Active",
+      "completed": "Completed",
+      "failed": "Failed",
+      "abandoned": "Abandoned"
+    },
+    "Tab": {
+      "active": "Active",
+      "closed": "Closed",
+      "hidden": "Hidden"
+    },
+    "Quest": {
+      "FIELDS": {
+        "status": {
+          "label": "Status",
+          "hint": "Hidden quests are invisible to players. Any other status shows the quest to everyone."
+        },
+        "giver": {
+          "uuid": { "label": "Linked actor" },
+          "name": {
+            "label": "Name",
+            "hint": "Players see this name, even without access to the actor."
+          },
+          "img": {
+            "label": "Portrait",
+            "hint": "Shown next to the quest title and in the list."
+          }
+        },
+        "location": {
+          "label": "Location",
+          "hint": "Where it happens. Links like @UUID[…]{Nachglut} work."
+        },
+        "description": {
+          "label": "Description",
+          "hint": "What the group knows. Players see this as soon as the quest is revealed."
+        },
+        "brief": {
+          "hook": {
+            "label": "Hook",
+            "hint": "How do the players stumble into it - without a marker?"
+          },
+          "wants": {
+            "label": "Who wants what",
+            "hint": "Whose desire drives the quest?"
+          },
+          "approach": {
+            "label": "What the group can do",
+            "hint": "The goal and two or three ways to get there."
+          },
+          "twist": {
+            "label": "The twist",
+            "hint": "What is really behind it (B-plot)?"
+          },
+          "choice": {
+            "label": "The choice",
+            "hint": "Which decision without a right answer waits at the end?"
+          },
+          "reward": {
+            "label": "Reward",
+            "hint": "What does the group get - and what does it cost?"
+          },
+          "consequences": {
+            "label": "Consequences, later",
+            "hint": "What comes back sessions later?"
+          },
+          "secret": {
+            "label": "Secret",
+            "hint": "Which secret of the world does it touch - and who knows: the players, the characters, nobody?"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "Giver": "Quest giver",
+      "GiverDrop": "Drop an actor here",
+      "GiverHint": "Drag an actor from the sidebar onto the portrait: name and image are filled in.",
+      "GiverClear": "Remove quest giver",
+      "DropActorOnly": "Only actors can be dropped here.",
+      "Objectives": "Objectives",
+      "ObjectivesHint": "Players only see revealed objectives. Optional objectives don't count towards progress.",
+      "Objective": "Objective",
+      "ObjectivePlaceholder": "What can the group do?",
+      "Revealed": "Revealed",
+      "Done": "Done",
+      "Optional": "Optional",
+      "MoveUp": "Move up",
+      "MoveDown": "Move down",
+      "Delete": "Delete objective",
+      "AddObjective": "Add objective",
+      "NoObjectives": "No objectives yet.",
+      "Brief": "GM Brief",
+      "BriefHint": "Only you see this. Not encrypted yet: a player who opens the browser console could read it."
+    },
+    "View": {
+      "Reveal": "Reveal to players",
+      "Hide": "Hide from players",
+      "Edit": "Edit",
+      "Objectives": "Objectives",
+      "Optional": "optional",
+      "ToggleDone": "Mark done / open",
+      "RevealObjective": "Reveal to players",
+      "HideObjective": "Hide from players",
+      "Brief": "GM Brief",
+      "Empty": "Nothing known yet."
+    },
+    "Log": {
+      "Open": "Quest Log",
+      "New": "New quest",
+      "NewQuestName": "New Quest",
+      "JournalName": "Quest Log",
+      "Select": "Select a quest.",
+      "Empty": {
+        "active": "No active quests.",
+        "closed": "No closed quests yet.",
+        "hidden": "No hidden quests."
+      }
+    },
+    "Notify": {
+      "Revealed": "New quest: {quest}",
+      "ObjectiveRevealed": "New objective in {quest}: {text}",
+      "ObjectiveDone": "Objective complete in {quest}: {text}",
+      "Closed": {
+        "completed": "Quest completed: {quest}",
+        "failed": "Quest failed: {quest}",
+        "abandoned": "Quest abandoned: {quest}"
+      }
+    },
+    "Keybinding": {
+      "Toggle": "Open or close the Quest Log"
+    }
+  }
+}

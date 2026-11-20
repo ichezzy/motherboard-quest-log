@@ -1,0 +1,9 @@
+{
+  "name": "motherboard-quest-log",
+  "private": true,
+  "description": "Foundry VTT module Motherboard: Quest Log (White Signal). No build step - package.json only runs the tests.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
