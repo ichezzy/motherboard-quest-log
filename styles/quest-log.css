@@ -38,6 +38,16 @@
   background: color-mix(in srgb, var(--mql-bad) 10%, transparent);
 }
 
+/* ---------- Paste quest profile ---------- */
+
+.mql-paste-dialog .mql-paste-text {
+  width: 100%;
+  min-height: 18rem;
+  resize: vertical;
+  font-family: var(--font-monospace, monospace);
+  font-size: var(--font-size-12, 12px);
+}
+
 /* ---------- Secret mode window ---------- */
 
 .mql-secret .mql-secret-content {

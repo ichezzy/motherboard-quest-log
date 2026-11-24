@@ -104,6 +104,14 @@
       "BriefHint": "Only you see this, but it is not encrypted: a player who opens the browser console could read it. Turn on Settings → Motherboard: Quest Log → Secret mode.",
       "BriefEncrypted": "Only you see this. Encrypted when saved - only your browser knows the secret word."
     },
+    "Paste": {
+      "Button": "Paste quest profile",
+      "Title": "Paste quest profile",
+      "Hint": "Paste one quest profile from your notes (Markdown, e.g. Obsidian): lines like **Aufhänger:** …, **Wer will was:** … or the English labels (**Hook:**, **Who wants what:** …). The heading above becomes the quest name. Links and bold are turned into plain text. Fields found replace what is there; the others stay.",
+      "Apply": "Fill in",
+      "NoFields": "No quest profile fields found. Expected lines like **Aufhänger:** … or **Hook:** …",
+      "Done": "{n} GM brief fields filled in."
+    },
     "Secret": {
       "Name": "Secret mode",
       "Label": "Secret mode",

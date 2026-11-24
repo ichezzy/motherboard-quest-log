@@ -2,6 +2,7 @@ import { MODULE_ID, BRIEF_FIELDS } from "./constants.mjs";
 import { addObjective, removeObjective, moveObjective } from "./logic.mjs";
 import { VIEW_TEMPLATE, questContext, activateQuestView } from "./quest-view.mjs";
 import { openBrief, briefValues, secretModeOn, isEncrypted, keyReady } from "./secret.mjs";
+import { parseQuestProfile } from "./profile.mjs";
 
 const { JournalEntryPageHandlebarsSheet } = foundry.applications.sheets.journal;
 
@@ -128,6 +129,7 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     on("move-up", button => this.#saveObjectives(moveObjective(this.#readObjectives(), rowId(button), -1)));
     on("move-down", button => this.#saveObjectives(moveObjective(this.#readObjectives(), rowId(button), 1)));
     on("clear-giver", () => page.update({ "system.giver": { uuid: null, name: "", img: null } }));
+    on("paste-profile", () => this.#pasteProfile());
 
     const drop = el.querySelector("[data-mql-drop='giver']");
     if (drop) {
@@ -163,6 +165,46 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
         optional: Boolean(value("optional")?.checked)
       };
     });
+  }
+
+  /**
+   * "Paste quest profile": Markdown from the notes → GM brief fields (and the quest name
+   * from the heading). Fields found replace what is there, the others stay.
+   */
+  async #pasteProfile() {
+    const L = key => game.i18n.localize(key);
+    let data = null;
+    try {
+      data = await foundry.applications.api.DialogV2.input({
+        window: { title: L("MQL.Paste.Title"), icon: "fa-solid fa-paste" },
+        position: { width: 620 },
+        classes: ["mql-paste-dialog"],
+        content: `<p class="hint">${L("MQL.Paste.Hint")}</p>
+          <textarea name="profile" class="mql-paste-text" rows="16" autofocus></textarea>`,
+        ok: { label: L("MQL.Paste.Apply"), icon: "fa-solid fa-paste" },
+        rejectClose: false
+      });
+    } catch {
+      return; // closed
+    }
+    const text = data?.profile ?? "";
+    if (!text.trim()) return;
+
+    const parsed = parseQuestProfile(text);
+    if (!parsed.count) {
+      ui.notifications.warn("MQL.Paste.NoFields", { localize: true });
+      return;
+    }
+    const page = this.document;
+    try {
+      const stored = await openBrief(page);
+      const update = { system: await briefValues({ ...stored, ...parsed.brief }) };
+      if (parsed.name) update.name = parsed.name;
+      await page.update(update);
+      ui.notifications.info(game.i18n.format("MQL.Paste.Done", { n: parsed.count }));
+    } catch (err) {
+      ui.notifications.error(err.message);
+    }
   }
 
   #saveObjectives(objectives) {

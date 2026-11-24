@@ -86,6 +86,11 @@
     {{else}}
     <p class="hint"><i class="fa-solid fa-lock-open" inert></i> {{localize "MQL.Edit.BriefHint"}}</p>
     {{/if}}
+    {{#unless briefLocked}}
+    <button type="button" class="mql-add" data-mql-action="paste-profile">
+      <i class="fa-solid fa-paste" inert></i> {{localize "MQL.Paste.Button"}}
+    </button>
+    {{/unless}}
     {{#each briefFields}}
     {{formField field value=value elementType="textarea" stacked=true}}
     {{/each}}
