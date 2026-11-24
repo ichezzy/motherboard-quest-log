@@ -1,8 +1,9 @@
 import { MODULE_ID, BRIEF_FIELDS } from "./constants.mjs";
 import {
   addObjective, removeObjective, moveObjective, removeById, patchById,
-  blankConclusion, blankClue, removeConclusion, clueGroups, addRewardItem
+  blankConclusion, blankClue, removeConclusion, clueGroups, addRewardItem, blankFollowUp, isDue
 } from "./logic.mjs";
+import { currentSession } from "./session.mjs";
 import { VIEW_TEMPLATE, questContext, activateQuestView } from "./quest-view.mjs";
 import { openSecrets, secretValues, secretsWritable, secretModeOn, isEncrypted, pickBrief } from "./secret.mjs";
 import { parseQuestProfile } from "./profile.mjs";
@@ -110,6 +111,11 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
       handedOut: rewards.handedOut,
       received: rewards.received
     };
+
+    const session = currentSession();
+    const followUps = this.#secretsOpen ? secrets.followUps : source.followUps;
+    context.followUps = followUps.map(f => ({ ...f, text: this.#secretsOpen ? f.text : "", due: isDue(f, session) }));
+    context.sessionHint = session ? F("MQL.Edit.SessionNow", { n: session }) : L("MQL.Edit.SessionNotSet");
     return context;
   }
 
@@ -210,6 +216,19 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
       this.#dropZone(rewardList, event => this.#onDropReward(event));
     }
 
+    // Follow-ups: own handlers as well (their texts are secret).
+    on("add-follow-up", () => {
+      const id = foundry.utils.randomID();
+      const session = currentSession();
+      this.#focus = `.mql-follow-up-row[data-id='${id}'] input[data-field='text']`;
+      this.#saveFollowUps([...this.#readFollowUps(), blankFollowUp(id, session ? session + 1 : null)]);
+    });
+    on("delete-follow-up", button => this.#saveFollowUps(removeById(this.#readFollowUps(), rowId(button))));
+    el.querySelector("[data-mql-list='follow-ups']")?.addEventListener("change", event => {
+      event.stopPropagation(); // not a form submit
+      this.#saveFollowUps(this.#readFollowUps());
+    });
+
     const giver = el.querySelector("[data-mql-drop='giver']");
     if (giver) this.#dropZone(giver, event => this.#onDropGiver(event));
 
@@ -309,6 +328,38 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     const clue = { ...blankClue(foundry.utils.randomID(), zone.dataset.id), ...patch };
     this.#focus = `.mql-clue-row[data-id='${clue.id}'] input[data-field='text']`;
     return this.#saveClues({ clues: [...clues, clue] });
+  }
+
+  #readFollowUps() {
+    return [...this.element.querySelectorAll(".mql-follow-up-row")].map(row => {
+      const session = Number.parseInt(row.querySelector("input[data-field='session']")?.value, 10);
+      return {
+        id: row.dataset.id,
+        text: row.querySelector("input[data-field='text']")?.value ?? "",
+        session: session > 0 ? session : null,
+        done: Boolean(row.querySelector("input[data-field='done']")?.checked)
+      };
+    });
+  }
+
+  /**
+   * Save the follow-ups. If only session numbers or ticks changed, the texts stay where they are
+   * (nothing to encrypt); new or changed texts are saved the secret way.
+   */
+  async #saveFollowUps(list) {
+    const page = this.document;
+    const stored = new Map((page._source.system.followUps ?? []).map(f => [f.id, f.text]));
+    const keepTexts = () => list.map(f => ({ ...f, text: stored.get(f.id) ?? "" }));
+    try {
+      let system = { followUps: keepTexts() };
+      if (this.#secretsOpen) {
+        const parts = await openSecrets(page);
+        if (!sameTexts(parts.followUps, list)) system = await secretValues({ ...parts, followUps: list });
+      }
+      await page.update({ system });
+    } catch (err) {
+      ui.notifications.error(err.message);
+    }
   }
 
   #readRewardItems() {

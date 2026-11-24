@@ -88,12 +88,21 @@ export class QuestData extends foundry.abstract.TypeDataModel {
         received: new ArrayField(new SchemaField({ actor: textField(), text: textField() }))
       }),
 
+      // Consequences that come back later: "in session 7". GM only - in secret mode the text
+      // is empty here and lives in `secret`. Reminder: follow-ups.mjs.
+      followUps: new ArrayField(new SchemaField({
+        id: idField(),
+        text: textField(),
+        session: new NumberField({ required: false, nullable: true, integer: true, min: 1, initial: null }),
+        done: new BooleanField({ initial: false })
+      })),
+
       // GM only. Plain text with line breaks. Empty in secret mode - then it lives in `secret`.
       brief: new SchemaField(Object.fromEntries(
         BRIEF_FIELDS.map(key => [key, new StringField({ required: true, blank: true, initial: "" })])
       )),
 
-      // Secret mode: brief and conclusion texts, encrypted as one package (see secret.mjs).
+      // Secret mode: brief, conclusion and follow-up texts, encrypted as one package (see secret.mjs).
       // Empty = everything is in plain text.
       secret: new StringField({ required: true, blank: true, initial: "" })
     };

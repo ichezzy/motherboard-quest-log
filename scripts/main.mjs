@@ -11,6 +11,8 @@ import { registerSecretSettings, loadKey, SECRET_CHANGED } from "./secret.mjs";
 import { SecretConfig } from "./secret-config.mjs";
 import { registerClues } from "./clues.mjs";
 import { registerRewards } from "./rewards.mjs";
+import { registerSessionSettings, askForSession, SESSION_CHANGED } from "./session.mjs";
+import { openFollowUps, refreshFollowUps, onSessionChanged } from "./follow-ups.mjs";
 
 Hooks.once("init", () => {
   CONFIG.JournalEntryPage.dataModels[PAGE_TYPE] = QuestData;
@@ -24,6 +26,7 @@ Hooks.once("init", () => {
 
   registerJournalSetting();
   registerSecretSettings(SecretConfig);
+  registerSessionSettings();
   registerVisibility();
   registerClues();
   registerRewards();
@@ -41,25 +44,42 @@ Hooks.once("init", () => {
   foundry.applications.handlebars.loadTemplates([VIEW_TEMPLATE]);
 
   // For macros: game.modules.get("motherboard-quest-log").api.openQuestLog()
-  game.modules.get(MODULE_ID).api = { openQuestLog, createQuest };
+  game.modules.get(MODULE_ID).api = { openQuestLog, createQuest, openFollowUps };
 });
 
 Hooks.once("ready", () => {
   registerNotifications();
-  if (game.user.isGM) loadKey();
+  if (!game.user.isGM) return;
+  loadKey();
+  askForSession().catch(err => console.error(`${MODULE_ID} | Session`, err));
 });
 
-// Key loaded, unlocked or forgotten: redraw everything that shows a GM brief.
-Hooks.on(SECRET_CHANGED, () => {
-  refreshQuestLog();
+/** Redraw every open quest sheet (journal pages and edit windows). */
+function refreshSheets() {
   for (const app of foundry.applications.instances.values()) {
     if (app instanceof QuestSheet && app.rendered) app.render();
   }
+}
+
+// Key loaded, unlocked or forgotten: redraw everything that shows secret parts.
+Hooks.on(SECRET_CHANGED, () => {
+  refreshQuestLog();
+  refreshFollowUps();
+  refreshSheets();
+});
+
+// New session number: due follow-ups change, the reminder may open.
+Hooks.on(SESSION_CHANGED, () => {
+  refreshQuestLog();
+  if (game.user.isGM) refreshSheets();
+  onSessionChanged();
 });
 
 for (const event of ["create", "update", "delete"]) {
   Hooks.on(`${event}JournalEntryPage`, page => {
-    if (page.type === PAGE_TYPE) refreshQuestLog();
+    if (page.type !== PAGE_TYPE) return;
+    refreshQuestLog();
+    refreshFollowUps();
   });
 }
 

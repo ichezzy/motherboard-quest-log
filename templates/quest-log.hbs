@@ -7,9 +7,18 @@
     </button>
     {{/each}}
     {{#if isGM}}
-    <button type="button" class="mql-new" data-action="create">
-      <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Log.New"}}
-    </button>
+    <span class="mql-gm-tools">
+      <button type="button" class="mql-session-button" data-action="session" data-tooltip="{{localize "MQL.Session.Change"}}">
+        <i class="fa-solid fa-calendar-day" inert></i> {{sessionLabel}}
+      </button>
+      <button type="button" class="mql-due-button {{#if due}}mql-has-due{{/if}}" data-action="followUps"
+              data-tooltip="{{localize "MQL.FollowUp.Title"}}" aria-label="{{localize "MQL.FollowUp.Title"}}">
+        <i class="fa-solid fa-bell" inert></i>{{#if due}} {{due}}{{/if}}
+      </button>
+      <button type="button" class="mql-new" data-action="create">
+        <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Log.New"}}
+      </button>
+    </span>
     {{/if}}
   </nav>
 

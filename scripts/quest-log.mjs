@@ -7,10 +7,13 @@ import { tabOf, progress, sortQuests, isUrgent } from "./logic.mjs";
 import { allQuests, canSee } from "./visibility.mjs";
 import { questContext, activateQuestView } from "./quest-view.mjs";
 import { createQuest } from "./journal.mjs";
+import { currentSession, editSession } from "./session.mjs";
+import { dueCount, openFollowUps } from "./follow-ups.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const L = key => game.i18n.localize(key);
+const F = (key, data) => game.i18n.format(key, data);
 const APP_ID = "mql-quest-log";
 
 export class QuestLog extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -22,7 +25,9 @@ export class QuestLog extends HandlebarsApplicationMixin(ApplicationV2) {
     actions: {
       tab: QuestLog.#onTab,
       select: QuestLog.#onSelect,
-      create: QuestLog.#onCreate
+      create: QuestLog.#onCreate,
+      session: () => editSession(),
+      followUps: () => openFollowUps()
     }
   };
 
@@ -68,8 +73,11 @@ export class QuestLog extends HandlebarsApplicationMixin(ApplicationV2) {
     const selected = list.find(p => p.uuid === this.#selected) ?? list[0] ?? null;
     this.#selected = selected?.uuid ?? null;
 
+    const session = isGM ? currentSession() : 0;
     return Object.assign(context, {
       isGM,
+      sessionLabel: session ? F("MQL.Session.Current", { n: session }) : L("MQL.Session.NotSet"),
+      due: isGM ? dueCount(session) : 0,
       tabs: tabs.map(id => ({ id, label: L(`MQL.Tab.${id}`), count: groups[id].length, active: id === this.#tab })),
       quests: list.map(page => {
         const { done, total } = progress(page.system.objectives, isGM);

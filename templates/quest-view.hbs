@@ -161,6 +161,24 @@
   </section>
   {{/if}}
 
+  {{#if followUps.length}}
+  <section class="mql-follow-ups mql-gm-only">
+    <h4><i class="fa-solid fa-bell" inert></i> {{localize "MQL.View.FollowUps"}}</h4>
+    <ul>
+      {{#each followUps}}
+      <li class="mql-follow-up {{#if done}}mql-done{{/if}} {{#if due}}mql-due{{/if}}">
+        <button type="button" class="mql-icon-button" data-mql-action="toggle-follow-up" data-id="{{id}}"
+                data-tooltip="{{localize "MQL.View.ToggleDone"}}" aria-label="{{localize "MQL.View.ToggleDone"}}">
+          <i class="{{#if done}}fa-solid fa-square-check{{else}}fa-regular fa-square{{/if}}" inert></i>
+        </button>
+        <span class="mql-follow-up-text">{{#if html}}{{{html}}}{{else}}<em>{{placeholder}}</em>{{/if}}</span>
+        <span class="mql-tag">{{tag}}</span>
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
   {{#unless hasContent}}<p class="mql-empty">{{localize "MQL.View.Empty"}}</p>{{/unless}}
 
   {{#if briefLocked}}

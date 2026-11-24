@@ -5,11 +5,13 @@
 import { MODULE_ID, STATUSES, STATUS_ICONS, BRIEF_FIELDS } from "./constants.mjs";
 import {
   visibleObjectives, progress, plainToHtml, toggleObjective, toggleById, isClosed, isUrgent, clueGroups, foundClues,
-  hasRewards, itemLabel, currencyLabel
+  hasRewards, itemLabel, currencyLabel, isDue
 } from "./logic.mjs";
 import { openSecrets } from "./secret.mjs";
 import { linkInfo, openLink } from "./clues.mjs";
 import { currencies, handOutRewards } from "./rewards.mjs";
+import { currentSession } from "./session.mjs";
+import { sessionTag } from "./follow-ups.mjs";
 
 export const VIEW_TEMPLATE = `modules/${MODULE_ID}/templates/quest-view.hbs`;
 
@@ -110,6 +112,19 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
   };
   rewards.show = isGM ? hasRewards(plan) || handedOut : handedOut && Boolean(rewards.received.length || rewards.text);
 
+  // Follow-ups: GM only.
+  const session = currentSession();
+  const placeholder = L(briefLocked ? "MQL.Edit.Encrypted" : "MQL.FollowUp.NoText");
+  const followUps = isGM
+    ? await Promise.all((secrets?.followUps ?? system.followUps).map(async f => ({
+      ...f,
+      html: f.text?.trim() ? await enrich(plainToHtml(f.text), page) : "",
+      placeholder,
+      tag: sessionTag(f, session),
+      due: isDue(f, session)
+    })))
+    : [];
+
   const description = system.description ? await enrich(system.description, page, { secrets: isGM }) : "";
   const outcome = system.outcome?.trim() ? await enrich(plainToHtml(system.outcome), page) : "";
 
@@ -134,8 +149,9 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     clueSets,
     clues,
     rewards,
+    followUps,
     progress: progress(system.objectives, isGM),
-    hasContent: Boolean(description || objectives.length || outcome || clues.length || clueSets.length || rewards.show),
+    hasContent: Boolean(description || objectives.length || outcome || clues.length || clueSets.length || rewards.show || followUps.length),
     brief,
     briefLocked,
     briefOpen: openBriefs.has(page.uuid)
@@ -185,6 +201,10 @@ export function activateQuestView(root, page) {
   if (!game.user.isGM) return;
 
   on("hand-out", () => handOutRewards(page));
+  // Texts stay as stored (plain, or empty in secret mode) - only the tick changes.
+  on("toggle-follow-up", button => page.update({
+    "system.followUps": toggleById(foundry.utils.deepClone(page._source.system.followUps), button.dataset.id, "done")
+  }));
   on("toggle-found", button => page.update({
     "system.clues": toggleById(foundry.utils.deepClone(page._source.system.clues), button.dataset.id, "found")
   }));

@@ -22,14 +22,16 @@ const journal = {
     }
   }
 };
-const page = (id, brief, conclusions = []) => ({
+const page = (id, brief, conclusions = [], followUps = []) => ({
   id,
   uuid: `JournalEntry.j.JournalEntryPage.${id}`,
   type: PAGE_TYPE,
   parent: journal,
-  system: { brief: { ...blank(), ...brief }, conclusions, clues: [], secret: "" }
+  system: { brief: { ...blank(), ...brief }, conclusions, clues: [], followUps, secret: "" }
 });
-const withTwist = page("a", { twist: "Der Händler ist ein Gutter." }, [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }]);
+const withTwist = page("a", { twist: "Der Händler ist ein Gutter." },
+  [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }],
+  [{ id: "f1", text: "Sein Bruder taucht auf", session: 7, done: false }]);
 const empty = page("b", {});
 journal.pages.contents.push(withTwist, empty);
 
@@ -54,15 +56,17 @@ test("first start with the Data Carrier's word: secret mode is set up, brief and
   assert.equal(secret.secretModeOn(), true);
   const stored = withTwist.system.secret;
   assert.ok(stored, "encrypted");
-  assert.ok(!stored.includes("Gutter") && !stored.includes("lügt"), "no plain text in the world");
+  assert.ok(!stored.includes("Gutter") && !stored.includes("lügt") && !stored.includes("Bruder"), "no plain text in the world");
   assert.equal(withTwist.system.brief.twist, "", "plain brief field is emptied");
   assert.deepEqual(withTwist.system.conclusions, [{ id: "k1", text: "" }, { id: "k2", text: "" }], "ids stay, texts go");
+  assert.deepEqual(withTwist.system.followUps, [{ id: "f1", text: "", session: 7, done: false }], "session and tick stay readable");
   assert.equal(empty.system.secret, "", "a quest without secret text stays as it is");
   assert.equal(store.get("motherboard-quest-log.secretWord"), WORD);
 
   const open = await secret.openSecrets(withTwist);
   assert.equal(open.brief.twist, "Der Händler ist ein Gutter.");
   assert.deepEqual(open.conclusions, [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }]);
+  assert.equal(open.followUps[0].text, "Sein Bruder taucht auf");
 });
 
 test("saving in secret mode stores only the encrypted package", async () => {
@@ -113,5 +117,6 @@ test("turning secret mode off makes everything readable again", async () => {
   assert.equal(withTwist.system.secret, "");
   assert.equal(withTwist.system.brief.twist, "Der Händler ist ein Gutter.");
   assert.deepEqual(withTwist.system.conclusions, [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }]);
+  assert.equal(withTwist.system.followUps[0].text, "Sein Bruder taucht auf");
   assert.deepEqual(secret.secretStatus(), { total: 2, encrypted: 0, open: 1 });
 });

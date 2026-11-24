@@ -9,7 +9,8 @@
  * - Players never need these parts, so only the GM ever decrypts.
  * - If the Data Carrier module knows a secret word in this browser, it is used too:
  *   one word for both modules.
- * - Package: {brief, conclusions: {id: text}}. Packages from 0.2 hold only the brief fields.
+ * - Package: {brief, conclusions: {id: text}, followUps: {id: text}}. Packages from 0.2 hold
+ *   only the brief fields.
  */
 import { MODULE_ID, BRIEF_FIELDS, DATA_CARRIER } from "./constants.mjs";
 import { cryptoAvailable, newSalt, keyFrom, encrypt, decrypt, createProbe, probeMatches } from "./crypto.mjs";
@@ -18,7 +19,7 @@ import { allQuests } from "./visibility.mjs";
 export const SECRET_CHANGED = `${MODULE_ID}.secretChanged`;
 
 /** Lists of a quest whose `text` is secret. */
-export const SECRET_LISTS = ["conclusions"];
+export const SECRET_LISTS = ["conclusions", "followUps"];
 
 const L = key => game.i18n.localize(key);
 const F = (key, data) => game.i18n.format(key, data);
@@ -115,7 +116,7 @@ export async function keyReady() {
 /**
  * Everything secret mode protects, in plain text: the brief and the SECRET_LISTS with their texts.
  * Encrypted quests only open for the GM with the key.
- * @returns {Promise<{brief: Record<string, string>, conclusions: object[]}>}
+ * @returns {Promise<{brief: Record<string, string>, conclusions: object[], followUps: object[]}>}
  */
 export async function openSecrets(page) {
   const parts = plainParts(page);

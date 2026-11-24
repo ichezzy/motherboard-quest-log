@@ -146,7 +146,18 @@
       "DeleteReward": "Remove item",
       "Currency": "Currency",
       "HandedOut": "Handed out:",
-      "ResetHandOut": "Allow handing out again"
+      "ResetHandOut": "Allow handing out again",
+      "FollowUps": "Follow-ups",
+      "FollowUpsHint": "Consequences that come back sessions later. When the session comes, you get a reminder. Encrypted in secret mode.",
+      "FollowUpsLocked": "The follow-ups are encrypted - enter the secret word under Settings → Motherboard: Quest Log → Secret mode to read and change their text.",
+      "FollowUp": "What comes back",
+      "FollowUpPlaceholder": "What happens - and to whom?",
+      "Session": "Session",
+      "SessionNow": "Current session: {n}.",
+      "SessionNotSet": "The session number is not set yet - you are asked on your first login of a day, or set it in the Quest Log.",
+      "AddFollowUp": "Add follow-up",
+      "DeleteFollowUp": "Delete follow-up",
+      "NoFollowUps": "No follow-ups yet."
     },
     "Clue": {
       "Missing": "The linked document doesn't exist any more.",
@@ -163,8 +174,8 @@
     "Secret": {
       "Name": "Secret mode",
       "Label": "Secret mode",
-      "Hint": "Stores the GM brief and the conclusions of every quest encrypted, so players can't read them - not even through the browser console.",
-      "Explanation": "Foundry sends every journal page to every player. Hiding a page doesn't stop someone who opens the browser console. In secret mode the GM brief and the conclusions are only stored encrypted. The key comes from your secret word, which stays in this browser and never reaches the server. Use the same word as in the Data Carrier module and you only need one.",
+      "Hint": "Stores the GM brief, the conclusions and the follow-ups of every quest encrypted, so players can't read them - not even through the browser console.",
+      "Explanation": "Foundry sends every journal page to every player. Hiding a page doesn't stop someone who opens the browser console. In secret mode the GM brief, the conclusions and the follow-ups are only stored encrypted. The key comes from your secret word, which stays in this browser and never reaches the server. Use the same word as in the Data Carrier module and you only need one.",
       "NoCrypto": "This browser has no Web Crypto (Foundry must be served via HTTPS or localhost).",
       "StatusOn": "Secret mode is on",
       "StatusOff": "Secret mode is off",
@@ -221,7 +232,35 @@
       "Rewards": "Rewards",
       "Received": "Received",
       "HandOut": "Hand out rewards",
-      "RewardsGMOnly": "Only you see this until it is handed out."
+      "RewardsGMOnly": "Only you see this until it is handed out.",
+      "FollowUps": "Follow-ups"
+    },
+    "Session": {
+      "Title": "Session",
+      "Number": "Session",
+      "Ask": "Is today session {n}? (Last session: {last}.)",
+      "AskFirst": "Which session do you play today? The Quest Log counts sessions for its follow-ups. Prep day? Choose \"Not today\".",
+      "EditHint": "Set the session number by hand. Follow-ups due by then show up in the reminder.",
+      "Start": "Start session",
+      "NotToday": "Not today",
+      "Set": "Set",
+      "Change": "Change the session number",
+      "Current": "Session {n}",
+      "NotSet": "No session",
+      "Started": "Quest Log: session {n}."
+    },
+    "FollowUp": {
+      "Title": "Follow-ups",
+      "DueNow": "Due now",
+      "NothingDue": "Nothing due this session.",
+      "Upcoming": "Coming up",
+      "InSession": "Session {n}",
+      "Overdue": "{n} late",
+      "NoSession": "No session",
+      "NoText": "No text",
+      "Done": "Done",
+      "Later": "Next session",
+      "DueNotice": "{n} follow-up(s) due this session."
     },
     "HandOut": {
       "Title": "Hand out rewards: {quest}",

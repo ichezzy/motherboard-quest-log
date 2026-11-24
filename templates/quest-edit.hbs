@@ -205,4 +205,47 @@
     {{formField field value=value elementType="textarea" stacked=true}}
     {{/each}}
   </fieldset>
+
+  {{!-- No `name` attributes in here: follow-ups are saved by their own handlers. --}}
+  <fieldset class="mql-follow-ups-set" data-mql-list="follow-ups">
+    <legend><i class="fa-solid fa-bell" inert></i> {{localize "MQL.Edit.FollowUps"}}</legend>
+    <p class="hint">{{localize "MQL.Edit.FollowUpsHint"}} {{sessionHint}}</p>
+    {{#if secretsLocked}}{{#if followUps.length}}
+    <p class="mql-warning"><i class="fa-solid fa-key" inert></i> {{localize "MQL.Edit.FollowUpsLocked"}}</p>
+    {{/if}}{{/if}}
+    {{#if followUps.length}}
+    <ol class="mql-follow-up-rows">
+      <li class="mql-follow-up-head" aria-hidden="true">
+        <span>{{localize "MQL.Edit.FollowUp"}}</span>
+        <span>{{localize "MQL.Edit.Session"}}</span>
+        <span>{{localize "MQL.Edit.Done"}}</span>
+        <span></span>
+      </li>
+      {{#each followUps}}
+      <li class="mql-follow-up-row {{#if due}}mql-due{{/if}}" data-id="{{id}}">
+        <input type="text" data-field="text" value="{{text}}"
+               placeholder="{{#if ../secretsLocked}}{{localize "MQL.Edit.Encrypted"}}{{else}}{{localize "MQL.Edit.FollowUpPlaceholder"}}{{/if}}"
+               aria-label="{{localize "MQL.Edit.FollowUp"}}" {{#if ../secretsLocked}}disabled{{/if}}>
+        <input type="number" data-field="session" value="{{session}}" min="1" step="1"
+               aria-label="{{localize "MQL.Edit.Session"}}">
+        <input type="checkbox" data-field="done" {{checked done}} aria-label="{{localize "MQL.Edit.Done"}}">
+        <span class="mql-row-buttons">
+          {{#unless ../secretsLocked}}
+          <button type="button" class="mql-icon-button" data-mql-action="delete-follow-up"
+                  data-tooltip="{{localize "MQL.Edit.DeleteFollowUp"}}" aria-label="{{localize "MQL.Edit.DeleteFollowUp"}}">
+            <i class="fa-solid fa-trash" inert></i></button>
+          {{/unless}}
+        </span>
+      </li>
+      {{/each}}
+    </ol>
+    {{else}}
+    <p class="mql-none">{{localize "MQL.Edit.NoFollowUps"}}</p>
+    {{/if}}
+    {{#unless secretsLocked}}
+    <button type="button" class="mql-add" data-mql-action="add-follow-up">
+      <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Edit.AddFollowUp"}}
+    </button>
+    {{/unless}}
+  </fieldset>
 </div>

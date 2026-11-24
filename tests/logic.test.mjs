@@ -5,6 +5,7 @@ import {
   addObjective, removeObjective, moveObjective, toggleObjective, patchById,
   blankConclusion, blankClue, removeConclusion, clueGroups, foundClues, clueLabel,
   hasRewards, addRewardItem, splitAmount, rewardPlan, itemLabel, currencyLabel,
+  blankFollowUp, isDue, dueFollowUps, upcomingFollowUps, localDay,
   questEvents, escapeHtml, plainToHtml, plainLabel
 } from "../scripts/logic.mjs";
 
@@ -176,6 +177,21 @@ test("rewards: split evenly, the rest goes to the party or else the first charac
   assert.deepEqual(noParty.get("b").currency, { coins: 3 });
   const labels = [{ key: "coins", label: "Bits" }, { key: "handfuls", label: "Bytes" }];
   assert.equal(currencyLabel({ handfuls: 2, coins: 3 }, labels), "3 Bits, 2 Bytes");
+});
+
+test("follow-ups: due once their session has come, until done", () => {
+  const f = (id, session, done = false) => ({ ...blankFollowUp(id, session), done });
+  const list = [f("a", 7), f("b", 5), f("c", 9), f("d", null), f("e", 4, true)];
+  assert.equal(isDue(list[0], 0), false, "no session number set yet");
+  assert.deepEqual(dueFollowUps(list, 7).map(x => x.id), ["b", "a"], "oldest first");
+  assert.deepEqual(upcomingFollowUps(list, 7).map(x => x.id), ["c", "d"], "without a number last");
+  assert.deepEqual(dueFollowUps(list, 0), []);
+  assert.deepEqual(upcomingFollowUps(list, 0).map(x => x.id), ["b", "a", "c", "d"]);
+});
+
+test("session day is the local calendar day", () => {
+  assert.equal(localDay(new Date(2026, 0, 5, 23, 59)), "2026-01-05");
+  assert.equal(localDay(new Date(2026, 10, 24, 0, 1)), "2026-11-24");
 });
 
 test("text helpers", () => {

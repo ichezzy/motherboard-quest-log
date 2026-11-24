@@ -1,0 +1,60 @@
+<div class="mql-fu">
+  <header class="mql-fu-head">
+    <span class="mql-fu-session"><i class="fa-solid fa-calendar-day" inert></i> {{sessionLabel}}</span>
+    <button type="button" data-action="changeSession">
+      <i class="fa-solid fa-pen" inert></i> {{localize "MQL.Session.Change"}}
+    </button>
+  </header>
+
+  {{#if locked}}<p class="mql-warning"><i class="fa-solid fa-key" inert></i> {{locked}}</p>{{/if}}
+
+  <h4>{{localize "MQL.FollowUp.DueNow"}}</h4>
+  {{#each due}}
+  <section class="mql-fu-quest">
+    <button type="button" class="mql-fu-quest-name" data-action="openQuest" data-uuid="{{uuid}}">
+      <i class="fa-solid fa-scroll" inert></i> {{name}}
+    </button>
+    <ul>
+      {{#each items}}
+      <li class="mql-fu-item {{#if overdue}}mql-overdue{{/if}}">
+        <span class="mql-fu-text">{{#if html}}{{{html}}}{{else}}<em>{{placeholder}}</em>{{/if}}</span>
+        <span class="mql-tag">{{tag}}</span>
+        <span class="mql-fu-buttons">
+          <button type="button" data-action="done" data-uuid="{{../uuid}}" data-id="{{id}}">
+            <i class="fa-solid fa-check" inert></i> {{localize "MQL.FollowUp.Done"}}</button>
+          <button type="button" data-action="later" data-uuid="{{../uuid}}" data-id="{{id}}">
+            <i class="fa-solid fa-forward" inert></i> {{localize "MQL.FollowUp.Later"}}</button>
+        </span>
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  {{else}}
+  <p class="mql-empty">{{localize "MQL.FollowUp.NothingDue"}}</p>
+  {{/each}}
+
+  {{#if upcoming.length}}
+  <details class="mql-fu-upcoming">
+    <summary>{{localize "MQL.FollowUp.Upcoming"}} ({{upcomingCount}})</summary>
+    {{#each upcoming}}
+    <section class="mql-fu-quest">
+      <button type="button" class="mql-fu-quest-name" data-action="openQuest" data-uuid="{{uuid}}">
+        <i class="fa-solid fa-scroll" inert></i> {{name}}
+      </button>
+      <ul>
+        {{#each items}}
+        <li class="mql-fu-item">
+          <span class="mql-fu-text">{{#if html}}{{{html}}}{{else}}<em>{{placeholder}}</em>{{/if}}</span>
+          <span class="mql-tag">{{tag}}</span>
+          <span class="mql-fu-buttons">
+            <button type="button" data-action="done" data-uuid="{{../uuid}}" data-id="{{id}}">
+              <i class="fa-solid fa-check" inert></i> {{localize "MQL.FollowUp.Done"}}</button>
+          </span>
+        </li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/each}}
+  </details>
+  {{/if}}
+</div>

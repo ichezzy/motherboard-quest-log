@@ -316,6 +316,38 @@
 .mql-sheet .mql-handed-out i { color: var(--mql-ok); }
 .mql-sheet .mql-handed-out ul { margin: 0 0 0.3rem; }
 
+/* Follow-ups in the edit window */
+.mql-sheet .mql-follow-up-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.mql-sheet .mql-follow-up-head,
+.mql-sheet .mql-follow-up-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.6rem 3.4rem 2rem;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mql-sheet .mql-follow-up-head {
+  font-size: var(--font-size-11, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mql-muted);
+}
+.mql-sheet .mql-follow-up-head span:not(:first-child) { text-align: center; }
+.mql-sheet .mql-follow-up-row input[type="checkbox"] {
+  justify-self: center;
+  margin: 0;
+}
+.mql-sheet .mql-follow-up-row.mql-due input[type="number"] {
+  border-color: #e0703a;
+  color: #e0703a;
+}
+
 .mql-found-count {
   flex: 0 0 auto;
   padding: 0 0.45rem;
@@ -615,6 +647,148 @@
   width: auto;
 }
 
+/* Follow-ups in the view (GM only) */
+.mql-quest .mql-follow-ups {
+  padding: 0.35rem 0.6rem;
+  border: 1px dashed var(--mql-line);
+  border-radius: 6px;
+}
+.mql-quest .mql-follow-ups h4 {
+  margin: 0 0 0.3rem;
+  border: none;
+  font-size: var(--font-size-12, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mql-muted);
+}
+.mql-quest .mql-follow-ups ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.mql-quest .mql-follow-up {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.mql-quest .mql-follow-up .mql-icon-button {
+  width: 1.6rem;
+  height: 1.6rem;
+  margin: -0.1rem 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--mql-accent);
+}
+.mql-quest .mql-follow-up-text { flex: 1; }
+.mql-quest .mql-follow-up.mql-done .mql-follow-up-text {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+.mql-quest .mql-follow-up.mql-due .mql-tag,
+.mql-follow-ups-window .mql-overdue .mql-tag {
+  border-color: #e0703a;
+  color: #e0703a;
+}
+
+/* Follow-ups window */
+.mql-follow-ups-window .window-content { padding: 0.6rem 0.8rem; }
+.mql-follow-ups-window .mql-fu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  --mql-accent: #c9973f;
+  --mql-muted: color-mix(in srgb, currentColor 60%, transparent);
+  --mql-line: color-mix(in srgb, currentColor 20%, transparent);
+  --mql-soft: color-mix(in srgb, currentColor 6%, transparent);
+}
+.mql-follow-ups-window .mql-fu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.mql-follow-ups-window .mql-fu-session { font-weight: bold; }
+.mql-follow-ups-window .mql-fu-session i { color: var(--mql-accent); }
+.mql-follow-ups-window button {
+  flex: 0 0 auto;
+  width: auto;
+}
+.mql-follow-ups-window h4 {
+  margin: 0.3rem 0 0;
+  border: none;
+  font-size: var(--font-size-12, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mql-muted);
+}
+.mql-follow-ups-window .mql-fu-quest {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--mql-line);
+  border-radius: 6px;
+  background: var(--mql-soft);
+}
+.mql-follow-ups-window .mql-fu-quest + .mql-fu-quest { margin-top: 0.35rem; }
+.mql-follow-ups-window .mql-fu-quest-name {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  font-weight: bold;
+  text-align: left;
+}
+.mql-follow-ups-window .mql-fu-quest-name:hover { color: var(--mql-accent); }
+.mql-follow-ups-window .mql-fu-quest ul {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.mql-follow-ups-window .mql-fu-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+}
+.mql-follow-ups-window .mql-fu-text { flex: 1 1 14rem; }
+.mql-follow-ups-window .mql-fu-buttons {
+  display: flex;
+  gap: 0.3rem;
+}
+.mql-follow-ups-window .mql-fu-buttons button {
+  min-height: 0;
+  padding: 0 0.45rem;
+  line-height: 1.7;
+  font-size: var(--font-size-12, 12px);
+}
+.mql-follow-ups-window .mql-fu-upcoming summary {
+  cursor: pointer;
+  margin-bottom: 0.35rem;
+}
+.mql-follow-ups-window .mql-tag {
+  padding: 0 0.4rem;
+  border: 1px solid var(--mql-line);
+  border-radius: 999px;
+  font-size: var(--font-size-11, 11px);
+  color: var(--mql-muted);
+  white-space: nowrap;
+}
+.mql-follow-ups-window .mql-empty {
+  color: var(--mql-muted);
+  font-style: italic;
+}
+.mql-follow-ups-window .mql-warning {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid color-mix(in srgb, #c4574c 55%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, #c4574c 10%, transparent);
+}
+
 /* Hand-out dialog and chat */
 .mql-hand-out .mql-reward-img {
   width: 24px;
@@ -699,10 +873,19 @@
   font-size: var(--font-size-11, 11px);
   opacity: 0.75;
 }
-.mql-log .mql-new {
+.mql-log .mql-gm-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+.mql-log .mql-gm-tools button {
   flex: 0 0 auto;
   width: auto;
-  margin-left: auto;
+}
+.mql-log .mql-due-button.mql-has-due {
+  border-color: #e0703a;
+  color: #e0703a;
 }
 .mql-log .mql-body {
   flex: 1;

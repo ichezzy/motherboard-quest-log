@@ -214,6 +214,37 @@ export function currencyLabel(amounts = {}, currencies = []) {
 }
 
 /* -------------------------------------------- */
+/*  Follow-ups and sessions                     */
+/* -------------------------------------------- */
+
+export function blankFollowUp(id, session = null) {
+  return { id, text: "", session, done: false };
+}
+
+/** Is a follow-up due in this session? Open, with a session number that has come. */
+export function isDue(followUp, session) {
+  return session > 0 && !followUp.done && followUp.session > 0 && followUp.session <= session;
+}
+
+/** Follow-ups due now (oldest first). */
+export function dueFollowUps(followUps = [], session = 0) {
+  return followUps.filter(f => isDue(f, session)).sort((a, b) => a.session - b.session);
+}
+
+/** Open follow-ups still to come (by session; without a number last). */
+export function upcomingFollowUps(followUps = [], session = 0) {
+  return followUps
+    .filter(f => !f.done && !isDue(f, session))
+    .sort((a, b) => (a.session ?? Infinity) - (b.session ?? Infinity));
+}
+
+/** The calendar day in local time, e.g. "2026-11-24" - one session prompt per day. */
+export function localDay(date = new Date()) {
+  const pad = n => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/* -------------------------------------------- */
 /*  Notifications                               */
 /* -------------------------------------------- */
 
