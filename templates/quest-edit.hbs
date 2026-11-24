@@ -79,7 +79,13 @@
 
   <fieldset class="mql-brief-set">
     <legend><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.Edit.Brief"}}</legend>
-    <p class="hint">{{localize "MQL.Edit.BriefHint"}}</p>
+    {{#if briefLocked}}
+    <p class="mql-warning"><i class="fa-solid fa-key" inert></i> {{briefLocked}}</p>
+    {{else if secretOn}}
+    <p class="hint"><i class="fa-solid fa-lock" inert></i> {{localize "MQL.Edit.BriefEncrypted"}}</p>
+    {{else}}
+    <p class="hint"><i class="fa-solid fa-lock-open" inert></i> {{localize "MQL.Edit.BriefHint"}}</p>
+    {{/if}}
     {{#each briefFields}}
     {{formField field value=value elementType="textarea" stacked=true}}
     {{/each}}

@@ -5,6 +5,7 @@
 .mql-sheet,
 .mql-quest,
 .mql-quest-log,
+.mql-secret,
 .mql-directory-row {
   --mql-accent: #c9973f;
   --mql-ok: #5fa46d;
@@ -28,6 +29,33 @@
 .mql-none {
   color: var(--mql-muted);
   font-style: italic;
+}
+
+.mql-warning {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--mql-bad) 55%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--mql-bad) 10%, transparent);
+}
+
+/* ---------- Secret mode window ---------- */
+
+.mql-secret .mql-secret-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.mql-secret .mql-secret-content p { margin: 0; }
+.mql-secret .mql-secret-status { font-weight: bold; }
+.mql-secret .mql-secret-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.mql-secret .mql-secret-buttons button,
+.mql-secret fieldset > button {
+  flex: 0 0 auto;
+  width: auto;
 }
 
 /* ---------- Edit window ---------- */
@@ -297,6 +325,10 @@
 }
 .mql-quest .mql-brief dt { font-weight: bold; }
 .mql-quest .mql-brief dd { margin: 0; }
+.mql-quest .mql-brief-locked {
+  margin: 0;
+  color: var(--mql-muted);
+}
 
 /* ---------- Quest Log window ---------- */
 

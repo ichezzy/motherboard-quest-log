@@ -40,10 +40,13 @@ export class QuestData extends foundry.abstract.TypeDataModel {
         optional: new BooleanField({ initial: false })
       })),
 
-      // GM only. Plain text with line breaks. Not encrypted yet (phase 2).
+      // GM only. Plain text with line breaks. Empty in secret mode - then it lives in `secret`.
       brief: new SchemaField(Object.fromEntries(
         BRIEF_FIELDS.map(key => [key, new StringField({ required: true, blank: true, initial: "" })])
-      ))
+      )),
+
+      // Secret mode: the brief, encrypted (see secret.mjs). Empty = brief is in plain text.
+      secret: new StringField({ required: true, blank: true, initial: "" })
     };
   }
 }

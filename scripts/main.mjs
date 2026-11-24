@@ -7,6 +7,8 @@ import { registerJournalSetting, createQuest } from "./journal.mjs";
 import { openQuestLog, toggleQuestLog, refreshQuestLog } from "./quest-log.mjs";
 import { addDirectoryButton } from "./directory.mjs";
 import { registerNotifications } from "./notify.mjs";
+import { registerSecretSettings, loadKey, SECRET_CHANGED } from "./secret.mjs";
+import { SecretConfig } from "./secret-config.mjs";
 
 Hooks.once("init", () => {
   CONFIG.JournalEntryPage.dataModels[PAGE_TYPE] = QuestData;
@@ -19,6 +21,7 @@ Hooks.once("init", () => {
   );
 
   registerJournalSetting();
+  registerSecretSettings(SecretConfig);
   registerVisibility();
 
   game.keybindings.register(MODULE_ID, "toggle", {
@@ -37,7 +40,18 @@ Hooks.once("init", () => {
   game.modules.get(MODULE_ID).api = { openQuestLog, createQuest };
 });
 
-Hooks.once("ready", () => registerNotifications());
+Hooks.once("ready", () => {
+  registerNotifications();
+  if (game.user.isGM) loadKey();
+});
+
+// Key loaded, unlocked or forgotten: redraw everything that shows a GM brief.
+Hooks.on(SECRET_CHANGED, () => {
+  refreshQuestLog();
+  for (const app of foundry.applications.instances.values()) {
+    if (app instanceof QuestSheet && app.rendered) app.render();
+  }
+});
 
 for (const event of ["create", "update", "delete"]) {
   Hooks.on(`${event}JournalEntryPage`, page => {

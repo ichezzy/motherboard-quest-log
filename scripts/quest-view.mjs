@@ -4,6 +4,7 @@
  */
 import { MODULE_ID, STATUSES, STATUS_ICONS, BRIEF_FIELDS } from "./constants.mjs";
 import { visibleObjectives, progress, plainToHtml, toggleObjective } from "./logic.mjs";
+import { openBrief } from "./secret.mjs";
 
 export const VIEW_TEMPLATE = `modules/${MODULE_ID}/templates/quest-view.hbs`;
 
@@ -61,12 +62,19 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     revealLabel: L(o.revealed ? "MQL.View.HideObjective" : "MQL.View.RevealObjective")
   })));
 
+  // GM brief: only ever opened for the GM (encrypted in secret mode).
   const brief = [];
+  let briefLocked = "";
   if (isGM) {
-    for (const key of BRIEF_FIELDS) {
-      const text = system.brief[key];
-      if (!text?.trim()) continue;
-      brief.push({ key, label: L(`MQL.Quest.FIELDS.brief.${key}.label`), html: await enrich(plainToHtml(text), page) });
+    try {
+      const plain = await openBrief(page);
+      for (const key of BRIEF_FIELDS) {
+        const text = plain[key];
+        if (!text?.trim()) continue;
+        brief.push({ key, label: L(`MQL.Quest.FIELDS.brief.${key}.label`), html: await enrich(plainToHtml(text), page) });
+      }
+    } catch (err) {
+      briefLocked = err.message;
     }
   }
 
@@ -90,6 +98,7 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     progress: progress(system.objectives, isGM),
     hasContent: Boolean(description || objectives.length),
     brief,
+    briefLocked,
     briefOpen: openBriefs.has(page.uuid)
   };
 }

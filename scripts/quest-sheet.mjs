@@ -1,6 +1,7 @@
 import { MODULE_ID, BRIEF_FIELDS } from "./constants.mjs";
 import { addObjective, removeObjective, moveObjective } from "./logic.mjs";
 import { VIEW_TEMPLATE, questContext, activateQuestView } from "./quest-view.mjs";
+import { openBrief, briefValues, secretModeOn, isEncrypted, keyReady } from "./secret.mjs";
 
 const { JournalEntryPageHandlebarsSheet } = foundry.applications.sheets.journal;
 
@@ -55,9 +56,39 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
       context.giver = source.giver;
       context.hasGiver = Boolean(source.giver.uuid || source.giver.name || source.giver.img);
       context.objectives = source.objectives;
-      context.briefFields = BRIEF_FIELDS.map(key => ({ field: fields.brief.fields[key], value: source.brief[key] }));
+      context.secretOn = secretModeOn();
+      // Encrypted without key: show no fields, so saving can't overwrite the brief with blanks.
+      let brief = null;
+      try {
+        brief = await openBrief(page);
+      } catch (err) {
+        context.briefLocked = err.message;
+      }
+      context.briefFields = brief
+        ? BRIEF_FIELDS.map(key => ({ field: fields.brief.fields[key], value: brief[key] }))
+        : [];
     }
     return context;
+  }
+
+  /**
+   * In secret mode the brief is never saved in plain text: it is merged with the stored
+   * brief and encrypted before the update. Without the key it is left untouched.
+   * @inheritDoc
+   */
+  async _processSubmitData(event, form, submitData, options) {
+    const system = submitData.system;
+    const page = this.document;
+    if (system?.brief && (secretModeOn() || isEncrypted(page))) {
+      if (await keyReady()) {
+        const stored = await openBrief(page);
+        Object.assign(system, await briefValues({ ...stored, ...system.brief }));
+      } else {
+        delete system.brief;
+        ui.notifications.error("MQL.Secret.Locked", { localize: true });
+      }
+    }
+    return super._processSubmitData(event, form, submitData, options);
   }
 
   /**

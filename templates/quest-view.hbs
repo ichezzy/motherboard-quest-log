@@ -72,7 +72,9 @@
 
   {{#unless hasContent}}<p class="mql-empty">{{localize "MQL.View.Empty"}}</p>{{/unless}}
 
-  {{#if brief.length}}
+  {{#if briefLocked}}
+  <p class="mql-brief mql-brief-locked"><i class="fa-solid fa-key" inert></i> {{localize "MQL.View.Brief"}}: {{briefLocked}}</p>
+  {{else if brief.length}}
   <details class="mql-brief" {{#if briefOpen}}open{{/if}}>
     <summary><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.View.Brief"}}</summary>
     <dl>
