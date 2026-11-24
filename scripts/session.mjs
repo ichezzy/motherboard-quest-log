@@ -9,9 +9,6 @@ import { MODULE_ID } from "./constants.mjs";
 
 export const SESSION_CHANGED = `${MODULE_ID}.sessionChanged`;
 
-/** The scene control group of the Motherboard: Ferrond module. */
-const FERROND_GROUP = "ferrond";
-
 const L = key => game.i18n.localize(key);
 const F = (key, data) => game.i18n.format(key, data);
 
@@ -84,22 +81,4 @@ export async function editSession() {
     icon: "fa-solid fa-check"
   });
   if (n) await setSession(n);
-}
-
-/**
- * Hook "getSceneControlButtons": "Start session" in Ferrond's group (GM only).
- * Ferrond adds its group in a hook of its own that is registered earlier - so register this one
- * in "init" or later. Without Ferrond there is no button; the Quest Log can still set the number.
- */
-export function addSessionControl(controls) {
-  const group = controls[FERROND_GROUP];
-  if (!game.user.isGM || !group?.tools) return;
-  group.tools.mqlStartSession = {
-    name: "mqlStartSession",
-    title: "MQL.Session.StartTitle",
-    icon: "fa-solid fa-calendar-day",
-    order: Object.keys(group.tools).length + 1,
-    button: true,
-    onChange: () => startSession()
-  };
 }

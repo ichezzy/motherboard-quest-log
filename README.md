@@ -31,7 +31,7 @@ For quick tests without a release:
 
 ## Using it
 
-**Open the Quest Log:** Journal sidebar → **Quest Log** button at the top (GM and players). Optional keybinding under *Configure Controls → Motherboard: Quest Log*.
+**Open the Quest Log:** Journal sidebar → **Quest Log** button at the top (GM and players). With the module *Motherboard: Ferrond* there is a **Quest Log** button in its group (gear) on the left as well - players see that group only while a shop is open. Optional keybinding under *Configure Controls → Motherboard: Quest Log*.
 
 **New quest:** In the Quest Log → **New quest**. The quest lands in the journal "Quest Log" (created on first use) and starts **hidden**. You can also add a page of type **Quest** to any journal - the Quest Log finds it anyway.
 
@@ -93,7 +93,8 @@ Foundry 14 sends every journal page to every client - hiding a page doesn't stop
 | `scripts/secret.mjs`, `scripts/crypto.mjs`, `scripts/secret-config.mjs` | Secret mode: key, encrypting brief, conclusions and follow-ups, settings window |
 | `scripts/clues.mjs` | Clue links, finding clues automatically |
 | `scripts/rewards.mjs` | Hand-out dialog: items, currency, chat |
-| `scripts/session.mjs` | Session number, "Start session" in the Ferrond group |
+| `scripts/session.mjs` | Session number, "Start session" dialog |
+| `scripts/controls.mjs` | Quest Log and Start session buttons in the Ferrond group |
 | `scripts/follow-ups.mjs` | Follow-ups window (reminders) |
 | `scripts/profile.mjs` | "Paste quest profile" parser (tested) |
 | `scripts/directory.mjs` | Button in the Journal sidebar |

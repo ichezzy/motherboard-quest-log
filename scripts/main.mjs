@@ -11,7 +11,8 @@ import { registerSecretSettings, loadKey, SECRET_CHANGED } from "./secret.mjs";
 import { SecretConfig } from "./secret-config.mjs";
 import { registerClues } from "./clues.mjs";
 import { registerRewards } from "./rewards.mjs";
-import { registerSessionSettings, addSessionControl, SESSION_CHANGED } from "./session.mjs";
+import { registerSessionSettings, SESSION_CHANGED } from "./session.mjs";
+import { addFerrondTools } from "./controls.mjs";
 import { openFollowUps, refreshFollowUps, onSessionChanged } from "./follow-ups.mjs";
 
 Hooks.once("init", () => {
@@ -30,8 +31,8 @@ Hooks.once("init", () => {
   registerVisibility();
   registerClues();
   registerRewards();
-  // "Start session" in Ferrond's group on the left. Registered here so it runs after Ferrond's own hook.
-  Hooks.on("getSceneControlButtons", addSessionControl);
+  // "Quest Log" and "Start session" in Ferrond's group on the left. Registered here so it runs after Ferrond's own hook.
+  Hooks.on("getSceneControlButtons", addFerrondTools);
 
   game.keybindings.register(MODULE_ID, "toggle", {
     name: "MQL.Keybinding.Toggle",
