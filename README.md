@@ -58,9 +58,9 @@ For quick tests without a release:
 - the GM brief in a collapsible box
 - **Edit**
 
-**Handing out rewards:** setting a quest with rewards to *Completed* opens the hand-out (also via **Hand out rewards**). Each item goes to the party (Daggerheart's active party) or a character; each currency to the party, a character, or split evenly among the characters (the rest goes to the party). Items land in the inventory - stacked if the actor has the same one - and currency in the purse. A chat message tells everyone, and players see "Received" in the quest. Each quest pays out once; "Allow handing out again" in the edit window resets that (nothing is taken back).
+**Handing out rewards:** setting a quest with rewards to *Completed* opens the hand-out (also via **Hand out rewards**). Each item goes to the party (Daggerheart's active party) or a character; each currency to the party, a character, or split evenly among the characters - the option says what that means ("Split: 2 Bits each, 1 to Party") and only shows up if every character gets at least one. Below the pickers the dialog shows who gets what before you hand it out. Items land in the inventory - stacked if the actor has the same one - and currency in the purse. A chat message tells everyone, and players see "Received" in the quest. Each quest pays out once; "Allow handing out again" in the edit window resets that (nothing is taken back).
 
-**Sessions and follow-ups:** the module counts sessions. On your first login of a day it asks "Is today session 5?" - *Start session* or *Not today* (prep days). The Quest Log shows the session number (click to change it) and a bell with the number of due follow-ups. When a session starts and something is due, the **Follow-ups** window opens: everything due (oldest first, with how late it is), each with *Done* or *Next session*, and what is coming up.
+**Sessions and follow-ups:** the module counts sessions. Start one with **Start session** (calendar) in the *Ferrond* group of the scene controls on the left - it suggests the next number, which you can change. That button needs the module *Motherboard: Ferrond*; without it, click the session number in the Quest Log. The Quest Log shows the session number (click to change it) and a bell with the number of due follow-ups. When a session starts and something is due, the **Follow-ups** window opens: everything due (oldest first, with how late it is), each with *Done* or *Next session*, and what is coming up.
 
 **Threads:** with more than four active quests the GM gets a hint in the Quest Log (Quest Guide: two to four threads, one urgent).
 
@@ -93,7 +93,7 @@ Foundry 14 sends every journal page to every client - hiding a page doesn't stop
 | `scripts/secret.mjs`, `scripts/crypto.mjs`, `scripts/secret-config.mjs` | Secret mode: key, encrypting brief, conclusions and follow-ups, settings window |
 | `scripts/clues.mjs` | Clue links, finding clues automatically |
 | `scripts/rewards.mjs` | Hand-out dialog: items, currency, chat |
-| `scripts/session.mjs` | Session number and the daily question |
+| `scripts/session.mjs` | Session number, "Start session" in the Ferrond group |
 | `scripts/follow-ups.mjs` | Follow-ups window (reminders) |
 | `scripts/profile.mjs` | "Paste quest profile" parser (tested) |
 | `scripts/directory.mjs` | Button in the Journal sidebar |

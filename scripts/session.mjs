@@ -1,13 +1,16 @@
 /**
  * The session number, for follow-ups ("remind me in session 7").
  *
- * On the GM's first login of a calendar day Foundry asks "Start session 5?". "Not today" keeps
- * the number (a prep day). The number can also be changed in the Quest Log at any time.
+ * The GM starts a session with "Start session" - a button in the Ferrond group of the scene
+ * controls on the left (if the Motherboard: Ferrond module is active). The number can also be
+ * changed in the Quest Log at any time.
  */
 import { MODULE_ID } from "./constants.mjs";
-import { localDay } from "./logic.mjs";
 
 export const SESSION_CHANGED = `${MODULE_ID}.sessionChanged`;
+
+/** The scene control group of the Motherboard: Ferrond module. */
+const FERROND_GROUP = "ferrond";
 
 const L = key => game.i18n.localize(key);
 const F = (key, data) => game.i18n.format(key, data);
@@ -21,8 +24,6 @@ export function registerSessionSettings() {
     default: 0,
     onChange: value => Hooks.callAll(SESSION_CHANGED, value)
   });
-  // The day the GM was last asked - so the question comes once per day.
-  game.settings.register(MODULE_ID, "sessionDay", { scope: "world", config: false, type: String, default: "" });
 }
 
 /** The current session number (0 = not set yet). */
@@ -38,7 +39,7 @@ export async function setSession(number) {
 }
 
 /** A small dialog with one number field. @returns {Promise<number|null>} */
-async function askNumber({ title, hint, value, ok, skip }) {
+async function askNumber({ title, hint, value, ok, icon }) {
   const { DialogV2 } = foundry.applications.api;
   const result = await DialogV2.wait({
     window: { title, icon: "fa-solid fa-calendar-day" },
@@ -50,12 +51,26 @@ async function askNumber({ title, hint, value, ok, skip }) {
         <div class="form-fields"><input type="number" name="session" value="${value}" min="1" step="1" autofocus></div>
       </div>`,
     buttons: [
-      { action: "ok", label: ok, icon: "fa-solid fa-play", default: true, callback: (event, button) => button.form.elements.session.valueAsNumber },
-      { action: "skip", label: skip, icon: "fa-solid fa-xmark" }
+      { action: "ok", label: ok, icon, default: true, callback: (event, button) => button.form.elements.session.valueAsNumber },
+      { action: "cancel", label: L("Cancel"), icon: "fa-solid fa-xmark" }
     ],
     rejectClose: false
   });
   return Number.isFinite(result) && result > 0 ? result : null;
+}
+
+/** "Start session": the next number, ready to confirm (or to change). */
+export async function startSession() {
+  if (!game.user.isGM) return;
+  const current = currentSession();
+  const n = await askNumber({
+    title: L("MQL.Session.StartTitle"),
+    hint: current ? F("MQL.Session.StartHint", { n: current + 1, last: current }) : L("MQL.Session.StartFirst"),
+    value: current + 1,
+    ok: L("MQL.Session.Start"),
+    icon: "fa-solid fa-play"
+  });
+  if (n) await setSession(n);
 }
 
 /** Quest Log button: set the session number by hand. */
@@ -66,25 +81,25 @@ export async function editSession() {
     hint: L("MQL.Session.EditHint"),
     value: currentSession() || 1,
     ok: L("MQL.Session.Set"),
-    skip: L("Cancel")
+    icon: "fa-solid fa-check"
   });
   if (n) await setSession(n);
 }
 
-/** Active GM, at "ready": once per day, ask whether a new session starts. */
-export async function askForSession() {
-  if (game.user !== game.users.activeGM) return;
-  const today = localDay();
-  if (game.settings.get(MODULE_ID, "sessionDay") === today) return;
-  await game.settings.set(MODULE_ID, "sessionDay", today);
-
-  const current = currentSession();
-  const n = await askNumber({
-    title: L("MQL.Session.Title"),
-    hint: current ? F("MQL.Session.Ask", { n: current + 1, last: current }) : L("MQL.Session.AskFirst"),
-    value: current + 1,
-    ok: L("MQL.Session.Start"),
-    skip: L("MQL.Session.NotToday")
-  });
-  if (n) await setSession(n);
+/**
+ * Hook "getSceneControlButtons": "Start session" in Ferrond's group (GM only).
+ * Ferrond adds its group in a hook of its own that is registered earlier - so register this one
+ * in "init" or later. Without Ferrond there is no button; the Quest Log can still set the number.
+ */
+export function addSessionControl(controls) {
+  const group = controls[FERROND_GROUP];
+  if (!game.user.isGM || !group?.tools) return;
+  group.tools.mqlStartSession = {
+    name: "mqlStartSession",
+    title: "MQL.Session.StartTitle",
+    icon: "fa-solid fa-calendar-day",
+    order: Object.keys(group.tools).length + 1,
+    button: true,
+    onChange: () => startSession()
+  };
 }

@@ -154,7 +154,7 @@
       "FollowUpPlaceholder": "What happens - and to whom?",
       "Session": "Session",
       "SessionNow": "Current session: {n}.",
-      "SessionNotSet": "The session number is not set yet - you are asked on your first login of a day, or set it in the Quest Log.",
+      "SessionNotSet": "The session number is not set yet - use Start session in the Ferrond controls on the left, or set it in the Quest Log.",
       "AddFollowUp": "Add follow-up",
       "DeleteFollowUp": "Delete follow-up",
       "NoFollowUps": "No follow-ups yet."
@@ -238,11 +238,11 @@
     "Session": {
       "Title": "Session",
       "Number": "Session",
-      "Ask": "Is today session {n}? (Last session: {last}.)",
-      "AskFirst": "Which session do you play today? The Quest Log counts sessions for its follow-ups. Prep day? Choose \"Not today\".",
+      "StartTitle": "Start session",
+      "StartHint": "Start session {n}? (Last session: {last}.) Follow-ups due by then show up in the reminder.",
+      "StartFirst": "Which session do you play today? The Quest Log counts sessions for its follow-ups.",
       "EditHint": "Set the session number by hand. Follow-ups due by then show up in the reminder.",
       "Start": "Start session",
-      "NotToday": "Not today",
       "Set": "Set",
       "Change": "Change the session number",
       "Current": "Session {n}",

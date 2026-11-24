@@ -263,12 +263,6 @@ export function upcomingFollowUps(followUps = [], session = 0) {
     .sort((a, b) => (a.session ?? Infinity) - (b.session ?? Infinity));
 }
 
-/** The calendar day in local time, e.g. "2026-11-24" - one session prompt per day. */
-export function localDay(date = new Date()) {
-  const pad = n => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
 /* -------------------------------------------- */
 /*  Notifications                               */
 /* -------------------------------------------- */
