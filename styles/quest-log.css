@@ -6,6 +6,7 @@
 .mql-quest,
 .mql-quest-log,
 .mql-secret,
+.mql-hand-out,
 .mql-directory-row {
   --mql-accent: #c9973f;
   --mql-ok: #5fa46d;
@@ -799,6 +800,13 @@
   border-radius: 4px;
 }
 .mql-hand-out .mql-hand-out-text { margin: 0.4rem 0 0; }
+.mql-hand-out .mql-hand-out-summary {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-left: 3px solid var(--mql-accent);
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.mql-hand-out .mql-hand-out-summary ul { margin: 0.2rem 0 0; padding-left: 1.1rem; }
 .mql-chat-rewards h3 { margin: 0 0 0.3rem; }
 .mql-chat-rewards ul { margin: 0 0 0.3rem; padding-left: 1.1rem; }
 

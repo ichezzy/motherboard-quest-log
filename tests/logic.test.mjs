@@ -4,7 +4,7 @@ import {
   tabOf, ownershipFor, visibleObjectives, progress, sortQuests, isUrgent,
   addObjective, removeObjective, moveObjective, toggleObjective, patchById,
   blankConclusion, blankClue, removeConclusion, clueGroups, foundClues, clueLabel,
-  hasRewards, addRewardItem, splitAmount, rewardPlan, itemLabel, currencyLabel,
+  hasRewards, addRewardItem, splitAmount, rewardPlan, itemLabel, currencyLabel, canSplit, planLines,
   blankFollowUp, isDue, dueFollowUps, upcomingFollowUps, localDay,
   questEvents, escapeHtml, plainToHtml, plainLabel
 } from "../scripts/logic.mjs";
@@ -177,6 +177,19 @@ test("rewards: split evenly, the rest goes to the party or else the first charac
   assert.deepEqual(noParty.get("b").currency, { coins: 3 });
   const labels = [{ key: "coins", label: "Bits" }, { key: "handfuls", label: "Bytes" }];
   assert.equal(currencyLabel({ handfuls: 2, coins: 3 }, labels), "3 Bits, 2 Bytes");
+});
+
+test("rewards: split only if every character gets one; the plan as lines", () => {
+  assert.equal(canSplit(1, 4), false, "1 Bit among 4 characters");
+  assert.equal(canSplit(4, 4), true);
+  assert.equal(canSplit(5, 1), false, "one character: just pick them");
+  const rewards = { items: [{ id: "r1", name: "Gear", quantity: 1 }], currency: { coins: 1, handfuls: 0 } };
+  const plan = rewardPlan(rewards, { items: { r1: "vanya" }, currency: { coins: "vanya" } }, { party: "party", characters: ["vanya", "kas"] });
+  const names = { vanya: "Vanya", party: "Party" };
+  const labels = [{ key: "coins", label: "Bits" }, { key: "handfuls", label: "Bytes" }];
+  assert.deepEqual(planLines(plan, id => names[id], labels), [{ actor: "Vanya", text: "Gear, 1 Bits" }]);
+  const toParty = rewardPlan(rewards, { items: { r1: "vanya" }, currency: { coins: "party" } }, { party: "party", characters: ["vanya"] });
+  assert.deepEqual(planLines(toParty, id => names[id], labels), [{ actor: "Vanya", text: "Gear" }, { actor: "Party", text: "1 Bits" }]);
 });
 
 test("follow-ups: due once their session has come, until done", () => {

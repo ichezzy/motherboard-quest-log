@@ -213,6 +213,31 @@ export function currencyLabel(amounts = {}, currencies = []) {
   return currencies.filter(c => amounts[c.key] > 0).map(c => `${amounts[c.key]} ${c.label}`).join(", ");
 }
 
+/**
+ * Can an amount be split among the characters? Only if there are two or more
+ * and every one of them gets at least one.
+ */
+export function canSplit(amount, count) {
+  return count > 1 && amount >= count;
+}
+
+/**
+ * A reward plan as lines for people: [{actor: "Vanya", text: "Gear, 1 Bits"}].
+ * @param {Map<string, {items: object[], currency: Record<string, number>}>} plan  from `rewardPlan`
+ * @param {(id: string) => string} nameOf
+ * @param {Array<{key: string, label: string}>} currencies
+ */
+export function planLines(plan, nameOf, currencies = []) {
+  const lines = [];
+  for (const [id, share] of plan) {
+    const parts = share.items.map(itemLabel);
+    const money = currencyLabel(share.currency, currencies);
+    if (money) parts.push(money);
+    if (parts.length) lines.push({ actor: nameOf(id), text: parts.join(", ") });
+  }
+  return lines;
+}
+
 /* -------------------------------------------- */
 /*  Follow-ups and sessions                     */
 /* -------------------------------------------- */

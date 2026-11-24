@@ -265,7 +265,9 @@
     "HandOut": {
       "Title": "Hand out rewards: {quest}",
       "Hint": "Who gets what? Items go into the inventory, currency into the purse. Everyone sees the result in the chat.",
-      "Split": "Split among the characters",
+      "SplitEven": "Split: {each} {label} each",
+      "SplitRest": "Split: {each} {label} each, {rest} to {name}",
+      "Summary": "Who gets what:",
       "AlsoTell": "Also:",
       "Give": "Hand out",
       "Chat": "Rewards: {quest}",

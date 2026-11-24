@@ -7,7 +7,7 @@
  * Opens by itself when the GM sets a quest with rewards to "completed".
  */
 import { PAGE_TYPE, CURRENCY_KEYS } from "./constants.mjs";
-import { hasRewards, rewardPlan, itemLabel, currencyLabel, escapeHtml } from "./logic.mjs";
+import { hasRewards, rewardPlan, itemLabel, currencyLabel, splitAmount, canSplit, planLines, escapeHtml } from "./logic.mjs";
 
 const L = key => game.i18n.localize(key);
 const F = (key, data) => game.i18n.format(key, data);
@@ -79,15 +79,43 @@ function dialogContent(rewards, money, { party, characters }) {
   for (const c of money) {
     const amount = rewards.currency[c.key];
     if (!(amount > 0)) continue;
-    const split = characters.length ? option("split", L("MQL.HandOut.Split"), !party) : "";
     rows.push(`<div class="form-group">
       <label>${c.icon ? `<i class="${escapeHtml(c.icon)}" inert></i> ` : ""}${amount} ${escapeHtml(c.label)}</label>
-      <select name="currency.${c.key}">${party ? option(party.id, party.name, true) : ""}${split}${characters.map(a => option(a.id, a.name, false)).join("")}</select>
+      <select name="currency.${c.key}">${party ? option(party.id, party.name, true) : ""}${splitOption(amount, c.label, party, characters)}${characters.map(a => option(a.id, a.name, false)).join("")}</select>
     </div>`);
   }
   const text = rewards.text?.trim()
     ? `<p class="mql-hand-out-text"><strong>${L("MQL.HandOut.AlsoTell")}</strong> ${escapeHtml(rewards.text)}</p>` : "";
-  return `<p class="hint">${L("MQL.HandOut.Hint")}</p>${rows.join("")}${text}`;
+  const summary = `<div class="mql-hand-out-summary"><strong>${L("MQL.HandOut.Summary")}</strong><ul></ul></div>`;
+  return `<p class="hint">${L("MQL.HandOut.Hint")}</p>${rows.join("")}${text}${summary}`;
+}
+
+/** "Split: 2 Bits each, 1 to Party" - only offered if every character gets at least one. */
+function splitOption(amount, label, party, characters) {
+  if (!canSplit(amount, characters.length)) return "";
+  const { each, rest } = splitAmount(amount, characters.length);
+  const text = rest
+    ? F("MQL.HandOut.SplitRest", { each, label, rest, name: (party ?? characters[0]).name })
+    : F("MQL.HandOut.SplitEven", { each, label });
+  return `<option value="split" ${party ? "" : "selected"}>${escapeHtml(text)}</option>`;
+}
+
+/** Who gets what, as the dialog's pickers stand right now. */
+function choicesOf(form) {
+  const data = foundry.utils.expandObject(new foundry.applications.ux.FormDataExtended(form).object);
+  return { items: data.item ?? {}, currency: data.currency ?? {} };
+}
+
+/** Keep the summary at the bottom of the dialog up to date. */
+function showSummary(form, rewards, money, who) {
+  const list = form.querySelector(".mql-hand-out-summary ul");
+  if (!list) return;
+  const plan = rewardPlan(rewards, choicesOf(form), {
+    party: who.party?.id ?? null,
+    characters: who.characters.map(a => a.id)
+  });
+  const lines = planLines(plan, id => game.actors.get(id)?.name ?? "?", money);
+  list.innerHTML = lines.map(r => `<li><strong>${escapeHtml(r.actor)}:</strong> ${escapeHtml(r.text)}</li>`).join("");
 }
 
 /**
@@ -121,6 +149,12 @@ export async function handOutRewards(page) {
       classes: ["mql-hand-out"],
       content: dialogContent(rewards, money, who),
       ok: { label: L("MQL.HandOut.Give"), icon: "fa-solid fa-gift" },
+      render: (event, dialog) => {
+        const form = dialog.element.querySelector("form");
+        if (!form) return;
+        form.addEventListener("change", () => showSummary(form, rewards, money, who));
+        showSummary(form, rewards, money, who);
+      },
       rejectClose: false
     });
   } catch {
