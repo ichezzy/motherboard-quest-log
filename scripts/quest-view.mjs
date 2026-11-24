@@ -79,6 +79,7 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
   }
 
   const description = system.description ? await enrich(system.description, page, { secrets: isGM }) : "";
+  const outcome = system.outcome?.trim() ? await enrich(plainToHtml(system.outcome), page) : "";
 
   return {
     uuid: page.uuid,
@@ -97,8 +98,9 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     location: system.location ? await enrich(plainToHtml(system.location), page) : "",
     description,
     objectives,
+    outcome,
     progress: progress(system.objectives, isGM),
-    hasContent: Boolean(description || objectives.length),
+    hasContent: Boolean(description || objectives.length || outcome),
     brief,
     briefLocked,
     briefOpen: openBriefs.has(page.uuid)

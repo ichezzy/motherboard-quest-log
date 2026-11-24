@@ -77,6 +77,13 @@
   </section>
   {{/if}}
 
+  {{#if outcome}}
+  <section class="mql-outcome">
+    <h4><i class="fa-solid fa-code-branch" inert></i> {{localize "MQL.View.Outcome"}}</h4>
+    <p>{{{outcome}}}</p>
+  </section>
+  {{/if}}
+
   {{#unless hasContent}}<p class="mql-empty">{{localize "MQL.View.Empty"}}</p>{{/unless}}
 
   {{#if briefLocked}}

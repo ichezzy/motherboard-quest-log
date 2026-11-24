@@ -78,6 +78,8 @@
     </button>
   </fieldset>
 
+  {{formField systemFields.outcome value=source.system.outcome elementType="textarea" stacked=true classes="mql-outcome-field"}}
+
   <fieldset class="mql-brief-set">
     <legend><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.Edit.Brief"}}</legend>
     {{#if briefLocked}}

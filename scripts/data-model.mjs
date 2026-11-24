@@ -43,6 +43,9 @@ export class QuestData extends foundry.abstract.TypeDataModel {
         optional: new BooleanField({ initial: false })
       })),
 
+      // What the group decided in the end. Plain text; players see it once it is filled in.
+      outcome: new StringField({ required: true, blank: true, initial: "" }),
+
       // GM only. Plain text with line breaks. Empty in secret mode - then it lives in `secret`.
       brief: new SchemaField(Object.fromEntries(
         BRIEF_FIELDS.map(key => [key, new StringField({ required: true, blank: true, initial: "" })])

@@ -32,7 +32,9 @@
           "hint": "Only one quest is urgent at a time - marking this one clears the others. Players see it, and it moves to the top of the list. Cleared when the quest closes."
         },
         "giver": {
-          "uuid": { "label": "Linked actor" },
+          "uuid": {
+            "label": "Linked actor"
+          },
           "name": {
             "label": "Name",
             "hint": "Players see this name, even without access to the actor."
@@ -49,6 +51,10 @@
         "description": {
           "label": "Description",
           "hint": "What the group knows. Players see this as soon as the quest is revealed."
+        },
+        "outcome": {
+          "label": "The group's decision",
+          "hint": "What the group chose in the end - in a few words. Players see it as soon as it is filled in."
         },
         "brief": {
           "hook": {
@@ -157,6 +163,7 @@
       "Hide": "Hide from players",
       "Edit": "Edit",
       "Objectives": "Objectives",
+      "Outcome": "The group's decision",
       "Optional": "optional",
       "ToggleDone": "Mark done / open",
       "RevealObjective": "Reveal to players",
