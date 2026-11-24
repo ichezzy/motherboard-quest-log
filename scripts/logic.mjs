@@ -135,6 +135,85 @@ export function clueLabel(clue) {
 }
 
 /* -------------------------------------------- */
+/*  Rewards                                     */
+/* -------------------------------------------- */
+
+/** Is there anything to hand out or to tell? */
+export function hasRewards(rewards = {}) {
+  return Boolean(rewards.items?.length
+    || Object.values(rewards.currency ?? {}).some(n => n > 0)
+    || rewards.text?.trim());
+}
+
+/** A dropped item: a new line, or one more of the same item. */
+export function addRewardItem(items, item) {
+  if (items.some(i => i.uuid === item.uuid)) {
+    return items.map(i => (i.uuid === item.uuid ? { ...i, quantity: i.quantity + 1 } : i));
+  }
+  return [...items, { quantity: 1, ...item }];
+}
+
+/** Same amount for everyone, the rest stays over. */
+export function splitAmount(amount, count) {
+  if (count < 1) return { each: 0, rest: amount };
+  const each = Math.floor(amount / count);
+  return { each, rest: amount - each * count };
+}
+
+/**
+ * Who gets what.
+ * @param {object} rewards     `system.rewards`
+ * @param {{items: Record<string, string>, currency: Record<string, string>}} choices
+ *   item id → actor id; currency key → actor id or "split"
+ * @param {{party?: string|null, characters?: string[]}} recipients   actor ids
+ *   "split": every character gets the same; the rest goes to the party, else to the first character.
+ * @returns {Map<string, {items: object[], currency: Record<string, number>}>}  in hand-out order
+ */
+export function rewardPlan(rewards, choices, { party = null, characters = [] } = {}) {
+  const plan = new Map();
+  const share = id => {
+    if (!plan.has(id)) plan.set(id, { items: [], currency: {} });
+    return plan.get(id);
+  };
+  const giveMoney = (id, key, amount) => {
+    if (!id || amount <= 0) return;
+    const entry = share(id);
+    entry.currency[key] = (entry.currency[key] ?? 0) + amount;
+  };
+
+  for (const item of rewards.items ?? []) {
+    const id = choices.items?.[item.id];
+    if (id) share(id).items.push(item);
+  }
+  for (const [key, amount] of Object.entries(rewards.currency ?? {})) {
+    if (!(amount > 0)) continue;
+    const choice = choices.currency?.[key];
+    if (choice !== "split") {
+      giveMoney(choice, key, amount);
+      continue;
+    }
+    const { each, rest } = splitAmount(amount, characters.length);
+    for (const id of characters) giveMoney(id, key, each);
+    giveMoney(party ?? characters[0], key, rest);
+  }
+  return plan;
+}
+
+/** "Health Stim ×2" */
+export function itemLabel(item) {
+  return item.quantity > 1 ? `${item.name} ×${item.quantity}` : item.name;
+}
+
+/**
+ * "3 Bytes, 1 Chunks" in the order of `currencies`.
+ * @param {Record<string, number>} amounts
+ * @param {Array<{key: string, label: string}>} currencies
+ */
+export function currencyLabel(amounts = {}, currencies = []) {
+  return currencies.filter(c => amounts[c.key] > 0).map(c => `${amounts[c.key]} ${c.label}`).join(", ");
+}
+
+/* -------------------------------------------- */
 /*  Notifications                               */
 /* -------------------------------------------- */
 

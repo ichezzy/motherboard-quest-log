@@ -10,6 +10,7 @@ import { registerNotifications } from "./notify.mjs";
 import { registerSecretSettings, loadKey, SECRET_CHANGED } from "./secret.mjs";
 import { SecretConfig } from "./secret-config.mjs";
 import { registerClues } from "./clues.mjs";
+import { registerRewards } from "./rewards.mjs";
 
 Hooks.once("init", () => {
   CONFIG.JournalEntryPage.dataModels[PAGE_TYPE] = QuestData;
@@ -25,6 +26,7 @@ Hooks.once("init", () => {
   registerSecretSettings(SecretConfig);
   registerVisibility();
   registerClues();
+  registerRewards();
 
   game.keybindings.register(MODULE_ID, "toggle", {
     name: "MQL.Keybinding.Toggle",

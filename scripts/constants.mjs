@@ -40,3 +40,6 @@ export const DATA_CARRIER = "motherboard-data-carrier-journal";
 
 /** Three Clue Rule from the Quest Guide: at least three clues per conclusion. */
 export const MIN_CLUES = 3;
+
+/** Daggerheart's currency slots (Homebrew setting; Ferrond names them Bits, Bytes, Chunks). */
+export const CURRENCY_KEYS = ["coins", "handfuls", "bags", "chests"];

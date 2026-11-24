@@ -1,12 +1,13 @@
 import { MODULE_ID, BRIEF_FIELDS } from "./constants.mjs";
 import {
   addObjective, removeObjective, moveObjective, removeById, patchById,
-  blankConclusion, blankClue, removeConclusion, clueGroups
+  blankConclusion, blankClue, removeConclusion, clueGroups, addRewardItem
 } from "./logic.mjs";
 import { VIEW_TEMPLATE, questContext, activateQuestView } from "./quest-view.mjs";
 import { openSecrets, secretValues, secretsWritable, secretModeOn, isEncrypted, pickBrief } from "./secret.mjs";
 import { parseQuestProfile } from "./profile.mjs";
 import { linkInfo, linkFromDrop, openToPlayers } from "./clues.mjs";
+import { currencies, resetHandOut } from "./rewards.mjs";
 
 const { JournalEntryPageHandlebarsSheet } = foundry.applications.sheets.journal;
 
@@ -100,6 +101,15 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
       countLabel: F("MQL.View.FoundCount", { found: group.found, total: group.total }),
       clues: group.clues.map(clue => ({ ...clue, link: linkInfo(clue) }))
     }));
+
+    const rewards = source.rewards;
+    context.rewards = {
+      items: rewards.items.map(item => ({ ...item, img: item.img || "icons/svg/item-bag.svg" })),
+      currency: currencies().map(c => ({ ...c, name: `system.rewards.currency.${c.key}`, value: rewards.currency[c.key] ?? 0 })),
+      text: rewards.text,
+      handedOut: rewards.handedOut,
+      received: rewards.received
+    };
     return context;
   }
 
@@ -187,6 +197,18 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     });
     // Drop on a clue: link it. Drop on a conclusion: a new clue with that link.
     for (const zone of el.querySelectorAll(".mql-clue-row, .mql-conclusion-edit")) this.#dropZone(zone, event => this.#onDropClue(event, zone));
+
+    // Reward items: own handlers too. Currency and text are normal form fields.
+    on("delete-reward", button => this.#saveRewardItems(removeById(this.#readRewardItems(), rowId(button))));
+    on("reset-hand-out", () => resetHandOut(page));
+    const rewardList = el.querySelector("[data-mql-list='reward-items']");
+    if (rewardList) {
+      rewardList.addEventListener("change", event => {
+        event.stopPropagation(); // not a form submit
+        this.#saveRewardItems(this.#readRewardItems());
+      });
+      this.#dropZone(rewardList, event => this.#onDropReward(event));
+    }
 
     const giver = el.querySelector("[data-mql-drop='giver']");
     if (giver) this.#dropZone(giver, event => this.#onDropGiver(event));
@@ -287,6 +309,32 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     const clue = { ...blankClue(foundry.utils.randomID(), zone.dataset.id), ...patch };
     this.#focus = `.mql-clue-row[data-id='${clue.id}'] input[data-field='text']`;
     return this.#saveClues({ clues: [...clues, clue] });
+  }
+
+  #readRewardItems() {
+    return [...this.element.querySelectorAll(".mql-reward-row")].map(row => ({
+      id: row.dataset.id,
+      uuid: row.dataset.uuid ?? "",
+      name: row.dataset.name ?? "",
+      img: row.dataset.img ?? "",
+      quantity: Math.max(1, Number.parseInt(row.querySelector("input[data-field='quantity']")?.value, 10) || 1)
+    }));
+  }
+
+  #saveRewardItems(items) {
+    return this.document.update({ "system.rewards.items": items });
+  }
+
+  /** An item dropped on the rewards: a new line, or one more of it. */
+  async #onDropReward(event) {
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
+    const item = data?.type === "Item" && data.uuid ? await fromUuid(data.uuid) : null;
+    if (!item) {
+      ui.notifications.warn("MQL.Edit.RewardDropOnly", { localize: true });
+      return;
+    }
+    const entry = { id: foundry.utils.randomID(), uuid: item.uuid, name: item.name, img: item.img };
+    return this.#saveRewardItems(addRewardItem(this.#readRewardItems(), entry));
   }
 
   /**

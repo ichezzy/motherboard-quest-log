@@ -254,6 +254,68 @@
   font-size: var(--font-size-12, 12px);
 }
 
+/* Rewards in the edit window */
+.mql-sheet .mql-reward-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 2.6rem;
+  padding: 0.35rem;
+  border: 2px dashed var(--mql-line);
+  border-radius: 6px;
+}
+.mql-sheet .mql-reward-items.mql-drag-over {
+  border-color: var(--mql-accent);
+  background: color-mix(in srgb, var(--mql-accent) 12%, transparent);
+}
+.mql-sheet .mql-reward-drop-hint {
+  margin: auto 0;
+  text-align: center;
+  color: var(--mql-muted);
+}
+.mql-sheet .mql-reward-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 4.5rem auto;
+  align-items: center;
+  gap: 0.45rem;
+}
+.mql-sheet .mql-reward-row img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border: none;
+  border-radius: 4px;
+}
+.mql-sheet .mql-reward-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mql-sheet .mql-currency {
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+}
+.mql-sheet .mql-currency-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+.mql-sheet .mql-currency-slot input { width: 4.5rem; }
+.mql-sheet .mql-reward-text textarea {
+  min-height: 3em;
+  resize: vertical;
+}
+.mql-sheet .mql-handed-out {
+  padding: 0.35rem 0.6rem;
+  border-left: 3px solid var(--mql-ok);
+  background: var(--mql-soft);
+  border-radius: 0 6px 6px 0;
+}
+.mql-sheet .mql-handed-out p { margin: 0 0 0.2rem; }
+.mql-sheet .mql-handed-out i { color: var(--mql-ok); }
+.mql-sheet .mql-handed-out ul { margin: 0 0 0.3rem; }
+
 .mql-found-count {
   flex: 0 0 auto;
   padding: 0 0.45rem;
@@ -499,6 +561,72 @@
   border-color: var(--mql-accent);
   color: var(--mql-accent);
 }
+
+/* Rewards in the view */
+.mql-quest .mql-rewards {
+  padding: 0.35rem 0.6rem;
+  border-left: 3px solid var(--mql-ok);
+  background: var(--mql-soft);
+  border-radius: 0 6px 6px 0;
+}
+.mql-quest .mql-rewards.mql-gm-only {
+  border: 1px dashed var(--mql-line);
+  border-radius: 6px;
+}
+.mql-quest .mql-rewards h4 {
+  margin: 0 0 0.3rem;
+  border: none;
+  font-size: var(--font-size-12, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mql-muted);
+}
+.mql-quest .mql-rewards ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.mql-quest .mql-reward-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mql-quest .mql-reward-list img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border: none;
+  border-radius: 4px;
+}
+.mql-quest .mql-reward-list i { width: 24px; text-align: center; color: var(--mql-accent); }
+.mql-quest .mql-reward-note { margin: 0.3rem 0 0; }
+.mql-quest .mql-reward-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.6rem;
+  margin-top: 0.4rem;
+}
+.mql-quest .mql-reward-actions button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* Hand-out dialog and chat */
+.mql-hand-out .mql-reward-img {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  object-fit: cover;
+  border: none;
+  border-radius: 4px;
+}
+.mql-hand-out .mql-hand-out-text { margin: 0.4rem 0 0; }
+.mql-chat-rewards h3 { margin: 0 0 0.3rem; }
+.mql-chat-rewards ul { margin: 0 0 0.3rem; padding-left: 1.1rem; }
 
 .mql-quest .mql-outcome {
   padding: 0.35rem 0.6rem;

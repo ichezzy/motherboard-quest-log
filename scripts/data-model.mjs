@@ -1,6 +1,8 @@
-import { STATUSES, BRIEF_FIELDS } from "./constants.mjs";
+import { STATUSES, BRIEF_FIELDS, CURRENCY_KEYS } from "./constants.mjs";
 
-const { HTMLField, StringField, BooleanField, ArrayField, SchemaField, DocumentUUIDField, FilePathField } = foundry.data.fields;
+const {
+  HTMLField, StringField, BooleanField, NumberField, ArrayField, SchemaField, DocumentUUIDField, FilePathField
+} = foundry.data.fields;
 
 const idField = () => new StringField({ required: true, blank: false, initial: () => foundry.utils.randomID() });
 const textField = () => new StringField({ required: true, blank: true, initial: "" });
@@ -66,6 +68,25 @@ export class QuestData extends foundry.abstract.TypeDataModel {
         name: textField(),
         found: new BooleanField({ initial: false })
       })),
+
+      // What the group gets. GM only until it is handed out (rewards.mjs); then players see `received`.
+      rewards: new SchemaField({
+        items: new ArrayField(new SchemaField({
+          id: idField(),
+          uuid: textField(),
+          name: textField(),
+          img: textField(),
+          quantity: new NumberField({ required: true, nullable: false, integer: true, min: 1, initial: 1 })
+        })),
+        // Daggerheart's four currency slots (Ferrond: Bits, Bytes, Chunks).
+        currency: new SchemaField(Object.fromEntries(CURRENCY_KEYS.map(key =>
+          [key, new NumberField({ required: true, nullable: false, integer: true, min: 0, initial: 0 })]))),
+        // Contacts, favours, reputation - plain text.
+        text: textField(),
+        handedOut: new BooleanField({ initial: false }),
+        // One line per recipient, written at the hand-out.
+        received: new ArrayField(new SchemaField({ actor: textField(), text: textField() }))
+      }),
 
       // GM only. Plain text with line breaks. Empty in secret mode - then it lives in `secret`.
       brief: new SchemaField(Object.fromEntries(

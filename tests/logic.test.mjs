@@ -4,6 +4,7 @@ import {
   tabOf, ownershipFor, visibleObjectives, progress, sortQuests, isUrgent,
   addObjective, removeObjective, moveObjective, toggleObjective, patchById,
   blankConclusion, blankClue, removeConclusion, clueGroups, foundClues, clueLabel,
+  hasRewards, addRewardItem, splitAmount, rewardPlan, itemLabel, currencyLabel,
   questEvents, escapeHtml, plainToHtml, plainLabel
 } from "../scripts/logic.mjs";
 
@@ -142,6 +143,39 @@ test("events: a found clue is announced, with the link name if it has no text", 
   assert.deepEqual(questEvents(before, after), [{ kind: "clue", text: "Clue a" }, { kind: "clue", text: "Disc 7" }]);
   assert.deepEqual(questEvents(after, before), [], "unticking is silent");
   assert.deepEqual(questEvents({ ...before, status: "hidden" }, { ...after, status: "hidden" }), [], "silent while hidden");
+});
+
+test("rewards: anything to hand out, same item twice adds one", () => {
+  const none = { items: [], currency: { coins: 0, handfuls: 0, bags: 0, chests: 0 }, text: " " };
+  assert.equal(hasRewards(none), false);
+  assert.equal(hasRewards({ ...none, text: "Stormy owes you" }), true);
+  assert.equal(hasRewards({ ...none, currency: { ...none.currency, bags: 2 } }), true);
+  let items = addRewardItem([], { id: "r1", uuid: "Item.stim", name: "Health Stim" });
+  items = addRewardItem(items, { id: "r2", uuid: "Item.stim", name: "Health Stim" });
+  assert.deepEqual(items, [{ id: "r1", uuid: "Item.stim", name: "Health Stim", quantity: 2 }]);
+  assert.equal(itemLabel(items[0]), "Health Stim ×2");
+  assert.equal(itemLabel({ name: "Key", quantity: 1 }), "Key");
+});
+
+test("rewards: split evenly, the rest goes to the party or else the first character", () => {
+  assert.deepEqual(splitAmount(7, 3), { each: 2, rest: 1 });
+  assert.deepEqual(splitAmount(5, 0), { each: 0, rest: 5 });
+  const rewards = {
+    items: [{ id: "r1", name: "Stim", quantity: 2 }, { id: "r2", name: "Key", quantity: 1 }],
+    currency: { coins: 7, handfuls: 2, bags: 0, chests: 0 }
+  };
+  const choices = { items: { r1: "kas", r2: "party" }, currency: { coins: "split", handfuls: "vanya" } };
+  const plan = rewardPlan(rewards, choices, { party: "party", characters: ["kas", "vanya", "drau"] });
+  assert.deepEqual([...plan.keys()], ["kas", "party", "vanya", "drau"]);
+  assert.deepEqual(plan.get("kas"), { items: [rewards.items[0]], currency: { coins: 2 } });
+  assert.deepEqual(plan.get("party"), { items: [rewards.items[1]], currency: { coins: 1 } });
+  assert.deepEqual(plan.get("vanya").currency, { coins: 2, handfuls: 2 });
+  const noParty = rewardPlan({ items: [], currency: { coins: 7 } }, { currency: { coins: "split" } }, { characters: ["a", "b"] });
+  assert.deepEqual(plan.get("drau").currency, { coins: 2 });
+  assert.deepEqual(noParty.get("a").currency, { coins: 4 });
+  assert.deepEqual(noParty.get("b").currency, { coins: 3 });
+  const labels = [{ key: "coins", label: "Bits" }, { key: "handfuls", label: "Bytes" }];
+  assert.equal(currencyLabel({ handfuls: 2, coins: 3 }, labels), "3 Bits, 2 Bytes");
 });
 
 test("text helpers", () => {

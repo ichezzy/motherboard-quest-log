@@ -141,6 +141,52 @@
     {{/unless}}
   </fieldset>
 
+  <fieldset class="mql-rewards-set">
+    <legend><i class="fa-solid fa-gift" inert></i> {{localize "MQL.Edit.Rewards"}}</legend>
+    <p class="hint">{{localize "MQL.Edit.RewardsHint"}}</p>
+    {{#if rewards.handedOut}}
+    <div class="mql-handed-out">
+      <p><i class="fa-solid fa-circle-check" inert></i> {{localize "MQL.Edit.HandedOut"}}</p>
+      {{#if rewards.received.length}}
+      <ul>{{#each rewards.received}}<li><strong>{{actor}}:</strong> {{text}}</li>{{/each}}</ul>
+      {{/if}}
+      <button type="button" class="mql-inline-button" data-mql-action="reset-hand-out">
+        <i class="fa-solid fa-rotate-left" inert></i> {{localize "MQL.Edit.ResetHandOut"}}
+      </button>
+    </div>
+    {{/if}}
+    {{!-- No `name` attributes in the item list: saved by its own handlers. --}}
+    <div class="mql-reward-items" data-mql-list="reward-items" data-tooltip="{{localize "MQL.Edit.RewardDrop"}}">
+      {{#each rewards.items}}
+      <div class="mql-reward-row" data-id="{{id}}" data-uuid="{{uuid}}" data-name="{{name}}" data-img="{{img}}">
+        <img src="{{img}}" alt="">
+        <span class="mql-reward-name">{{name}}</span>
+        <input type="number" data-field="quantity" value="{{quantity}}" min="1" step="1"
+               aria-label="{{localize "MQL.Edit.Quantity"}}" data-tooltip="{{localize "MQL.Edit.Quantity"}}">
+        <button type="button" class="mql-icon-button" data-mql-action="delete-reward"
+                data-tooltip="{{localize "MQL.Edit.DeleteReward"}}" aria-label="{{localize "MQL.Edit.DeleteReward"}}">
+          <i class="fa-solid fa-trash" inert></i></button>
+      </div>
+      {{else}}
+      <p class="mql-reward-drop-hint"><i class="fa-solid fa-hand-holding" inert></i> {{localize "MQL.Edit.RewardDrop"}}</p>
+      {{/each}}
+    </div>
+    {{#if rewards.currency.length}}
+    <div class="form-group">
+      <label>{{localize "MQL.Edit.Currency"}}</label>
+      <div class="form-fields mql-currency">
+        {{#each rewards.currency}}
+        <label class="mql-currency-slot">
+          {{#if icon}}<i class="{{icon}}" inert></i>{{/if}} {{label}}
+          <input type="number" name="{{name}}" value="{{value}}" min="0" step="1">
+        </label>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+    {{formField systemFields.rewards.fields.text value=rewards.text elementType="textarea" stacked=true classes="mql-reward-text"}}
+  </fieldset>
+
   <fieldset class="mql-brief-set">
     <legend><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.Edit.Brief"}}</legend>
     {{#if briefLocked}}

@@ -137,6 +137,30 @@
   </section>
   {{/if}}
 
+  {{#if rewards.show}}
+  <section class="mql-rewards {{#unless rewards.handedOut}}mql-gm-only{{/unless}}">
+    <h4><i class="fa-solid fa-gift" inert></i>
+      {{#if rewards.handedOut}}{{localize "MQL.View.Received"}}{{else}}{{localize "MQL.View.Rewards"}}{{/if}}</h4>
+    {{#if rewards.handedOut}}
+    {{#if rewards.received.length}}
+    <ul class="mql-received">{{#each rewards.received}}<li><strong>{{actor}}:</strong> {{text}}</li>{{/each}}</ul>
+    {{/if}}
+    {{else}}
+    <ul class="mql-reward-list">
+      {{#each rewards.items}}<li><img src="{{img}}" alt=""> {{label}}</li>{{/each}}
+      {{#if rewards.currency}}<li><i class="fa-solid fa-coins" inert></i> {{rewards.currency}}</li>{{/if}}
+    </ul>
+    {{/if}}
+    {{#if rewards.text}}<p class="mql-reward-note">{{{rewards.text}}}</p>{{/if}}
+    {{#if rewards.canHandOut}}
+    <div class="mql-reward-actions">
+      <button type="button" data-mql-action="hand-out"><i class="fa-solid fa-gift" inert></i> {{localize "MQL.View.HandOut"}}</button>
+      <span class="hint">{{localize "MQL.View.RewardsGMOnly"}}</span>
+    </div>
+    {{/if}}
+  </section>
+  {{/if}}
+
   {{#unless hasContent}}<p class="mql-empty">{{localize "MQL.View.Empty"}}</p>{{/unless}}
 
   {{#if briefLocked}}

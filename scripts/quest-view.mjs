@@ -4,10 +4,12 @@
  */
 import { MODULE_ID, STATUSES, STATUS_ICONS, BRIEF_FIELDS } from "./constants.mjs";
 import {
-  visibleObjectives, progress, plainToHtml, toggleObjective, toggleById, isClosed, isUrgent, clueGroups, foundClues
+  visibleObjectives, progress, plainToHtml, toggleObjective, toggleById, isClosed, isUrgent, clueGroups, foundClues,
+  hasRewards, itemLabel, currencyLabel
 } from "./logic.mjs";
 import { openSecrets } from "./secret.mjs";
 import { linkInfo, openLink } from "./clues.mjs";
+import { currencies, handOutRewards } from "./rewards.mjs";
 
 export const VIEW_TEMPLATE = `modules/${MODULE_ID}/templates/quest-view.hbs`;
 
@@ -95,6 +97,19 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     : [];
   const clues = isGM ? [] : await Promise.all(foundClues(system.conclusions, system.clues).map(clue));
 
+  // Rewards: the GM sees the plan; everyone sees what was received once it is handed out.
+  const plan = system.rewards;
+  const handedOut = plan.handedOut;
+  const rewards = {
+    handedOut,
+    received: handedOut ? plan.received : [],
+    text: (isGM || handedOut) && plan.text?.trim() ? await enrich(plainToHtml(plan.text), page) : "",
+    items: isGM && !handedOut ? plan.items.map(item => ({ ...item, label: itemLabel(item), img: item.img || "icons/svg/item-bag.svg" })) : [],
+    currency: isGM && !handedOut ? currencyLabel(plan.currency, currencies()) : "",
+    canHandOut: isGM && !handedOut && hasRewards(plan)
+  };
+  rewards.show = isGM ? hasRewards(plan) || handedOut : handedOut && Boolean(rewards.received.length || rewards.text);
+
   const description = system.description ? await enrich(system.description, page, { secrets: isGM }) : "";
   const outcome = system.outcome?.trim() ? await enrich(plainToHtml(system.outcome), page) : "";
 
@@ -118,8 +133,9 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     outcome,
     clueSets,
     clues,
+    rewards,
     progress: progress(system.objectives, isGM),
-    hasContent: Boolean(description || objectives.length || outcome || clues.length || clueSets.length),
+    hasContent: Boolean(description || objectives.length || outcome || clues.length || clueSets.length || rewards.show),
     brief,
     briefLocked,
     briefOpen: openBriefs.has(page.uuid)
@@ -168,6 +184,7 @@ export function activateQuestView(root, page) {
 
   if (!game.user.isGM) return;
 
+  on("hand-out", () => handOutRewards(page));
   on("toggle-found", button => page.update({
     "system.clues": toggleById(foundry.utils.deepClone(page._source.system.clues), button.dataset.id, "found")
   }));

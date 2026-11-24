@@ -56,6 +56,12 @@
           "label": "The group's decision",
           "hint": "What the group chose in the end - in a few words. Players see it as soon as it is filled in."
         },
+        "rewards": {
+          "text": {
+            "label": "Other rewards",
+            "hint": "A contact, a favour, reputation, a piece of truth - plain text. Players see it once the rewards are handed out."
+          }
+        },
         "brief": {
           "hook": {
             "label": "Hook",
@@ -131,7 +137,16 @@
       "ClearLink": "Remove link",
       "Found": "Found",
       "AddClue": "Add clue",
-      "DeleteClue": "Delete clue"
+      "DeleteClue": "Delete clue",
+      "Rewards": "Rewards",
+      "RewardsHint": "Players only see the rewards once they are handed out. Setting the quest to Completed opens the hand-out: each item goes to the party or a character, currency to the party or split among the characters.",
+      "RewardDrop": "Drop items here (from the sidebar, a compendium or a sheet)",
+      "RewardDropOnly": "Only items can be dropped here.",
+      "Quantity": "Quantity",
+      "DeleteReward": "Remove item",
+      "Currency": "Currency",
+      "HandedOut": "Handed out:",
+      "ResetHandOut": "Allow handing out again"
     },
     "Clue": {
       "Missing": "The linked document doesn't exist any more.",
@@ -202,7 +217,23 @@
       "ConclusionHidden": "Conclusion encrypted",
       "FoundCount": "{found} of {total} found",
       "ToggleFound": "Mark found / not found",
-      "OpenLink": "Open"
+      "OpenLink": "Open",
+      "Rewards": "Rewards",
+      "Received": "Received",
+      "HandOut": "Hand out rewards",
+      "RewardsGMOnly": "Only you see this until it is handed out."
+    },
+    "HandOut": {
+      "Title": "Hand out rewards: {quest}",
+      "Hint": "Who gets what? Items go into the inventory, currency into the purse. Everyone sees the result in the chat.",
+      "Split": "Split among the characters",
+      "AlsoTell": "Also:",
+      "Give": "Hand out",
+      "Chat": "Rewards: {quest}",
+      "Missing": "\"{name}\" doesn't exist any more - skipped.",
+      "Already": "These rewards were handed out already.",
+      "Nothing": "This quest has no rewards.",
+      "NoRecipients": "No party and no player characters to hand rewards to."
     },
     "Log": {
       "Open": "Quest Log",
