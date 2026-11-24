@@ -37,27 +37,35 @@ For quick tests without a release:
 
 **Edit window:**
 - **Status** - Hidden · Active · Completed · Failed · Abandoned. Hidden quests are invisible to players; any other status shows the quest to everyone (the page's default ownership follows the status).
+- **Urgent** - at most one quest at a time: marking one clears the others, closing a quest clears it. Players see a fire badge, the quest moves to the top of the list, and everyone gets "Urgent: …".
 - **Quest giver** - drag an actor from the sidebar onto the portrait: name and image are filled in. Players see name and portrait without needing access to the actor.
 - **Location** - plain text, `@UUID[…]{…}` links work.
 - **Description** - what the group knows.
 - **Objectives** - text plus *Revealed*, *Done*, *Optional*; reorder and delete with the buttons. Players only see revealed objectives. Optional objectives don't count towards progress.
+- **The group's decision** - plain text; players see it in its own box as soon as it is filled in.
 - **GM Brief** - the eight fields of the quest profile from the Quest Guide: Hook, Who wants what, What the group can do, The twist, The choice, Reward, Consequences later, Secret.
+- **Paste quest profile** - paste a profile from your notes (Markdown, e.g. Obsidian) and the eight fields are filled in; the heading becomes the quest name. German labels (`**Aufhänger:**`, `**Wer will was:**`, `**Die Wendung:**` …) and English ones (`**Hook:**` …) both work; wikilinks, bold and vault markers become plain text.
 
 **View** (journal page and Quest Log): portrait, status, quest giver, location, progress, description, objectives. Name and portrait of the quest giver open the actor sheet for everyone with at least *Limited* permission on the actor (the GM always); for everyone else they are plain text. The GM additionally has:
-- **Reveal to players** / **Hide from players** and a status picker
+- **Reveal to players** / **Hide from players**, a status picker and **Mark urgent**
 - a checkbox and an eye per objective: mark done, reveal one by one
 - the GM brief in a collapsible box
 - **Edit**
 
-**Announcements:** Everyone who can see the quest gets a short notice when the GM reveals a quest, reveals an objective, ticks a revealed objective done, or closes the quest (completed / failed / abandoned). Editing text stays silent, and so does everything while a quest is hidden.
+**Announcements:** Everyone who can see the quest gets a short notice when the GM reveals a quest, reveals an objective, ticks a revealed objective done, marks the quest urgent, or closes it (completed / failed / abandoned). Editing text stays silent, and so does everything while a quest is hidden.
 
-## Secrecy
+## Secret mode
 
-Foundry 14 sends every journal page to every client. "Hidden" means "not shown", not "secret": a player who opens the browser console could read hidden quests and the GM brief. Encryption (as in the Data Carrier module) is planned for phase 2.
+Foundry 14 sends every journal page to every client - hiding a page doesn't stop someone who opens the browser console. In **secret mode** the GM brief is only stored encrypted (AES-GCM 256, key via PBKDF2 from the GM's secret word; same scheme as the Data Carrier module). The word stays in the GM's browser; the world only holds salt and a check value.
+
+- *Settings → Motherboard: Quest Log → Secret mode*: set a word, unlock in another browser, encrypt leftovers, forget the word in this browser, or turn secret mode off (decrypts everything).
+- **One word for both modules:** if the Data Carrier module knows a secret word in this browser, the Quest Log uses it - on first start it turns secret mode on with that word and encrypts every brief written so far.
+- Without the word the brief stays shut: the view says so, and the edit window shows no brief fields, so nothing can be overwritten.
+- Still readable through the console: names, descriptions and objectives of hidden quests. Only the brief is encrypted.
 
 ## Roadmap
 
-- **Phase 2 - tools from the Quest Guide:** encrypt the GM brief, paste a quest profile from Obsidian, urgent flag (at most one), the group's decision, consequences with a reminder, clues (incl. data carriers), rewards.
+- **Phase 2b - more tools from the Quest Guide:** consequences with a reminder, clues (incl. data carriers), rewards.
 - **Phase 3 - style and extras:** White Signal skin, on-screen tracker, player notes, "Open in Obsidian" button.
 
 ## Files
@@ -71,5 +79,7 @@ Foundry 14 sends every journal page to every client. "Hidden" means "not shown",
 | `scripts/visibility.mjs` | Status → ownership, who sees what |
 | `scripts/notify.mjs` | Announcements over the module socket |
 | `scripts/journal.mjs` | Journal "Quest Log", new quests |
+| `scripts/secret.mjs`, `scripts/crypto.mjs`, `scripts/secret-config.mjs` | Secret mode: key, encrypting the brief, settings window |
+| `scripts/profile.mjs` | "Paste quest profile" parser (tested) |
 | `scripts/directory.mjs` | Button in the Journal sidebar |
 | `scripts/logic.mjs` | Pure helpers (tested) |
