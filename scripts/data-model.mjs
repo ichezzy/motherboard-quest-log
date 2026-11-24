@@ -19,6 +19,9 @@ export class QuestData extends foundry.abstract.TypeDataModel {
         choices: Object.fromEntries(STATUSES.map(s => [s, `MQL.Status.${s}`]))
       }),
 
+      // At most one quest is urgent (see visibility.mjs). Players see it; cleared when the quest closes.
+      urgent: new BooleanField({ initial: false }),
+
       // Name and portrait are stored on the quest, so players see them without access to the actor.
       giver: new SchemaField({
         uuid: new DocumentUUIDField(),

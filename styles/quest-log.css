@@ -232,6 +232,14 @@
 .mql-status[data-status="abandoned"],
 .mql-status[data-status="hidden"] { color: var(--mql-muted); }
 
+.mql-urgent,
+.mql-urgent i { color: #e0703a; }
+.mql-quest .mql-urgent { font-weight: bold; }
+.mql-quest .mql-gm-bar button.mql-urgent-on {
+  border-color: #e0703a;
+  color: #e0703a;
+}
+
 .mql-quest .mql-gm-bar {
   display: flex;
   flex-wrap: wrap;

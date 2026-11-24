@@ -3,7 +3,7 @@
  * Both use the same template, the same context and the same buttons.
  */
 import { MODULE_ID, STATUSES, STATUS_ICONS, BRIEF_FIELDS } from "./constants.mjs";
-import { visibleObjectives, progress, plainToHtml, toggleObjective } from "./logic.mjs";
+import { visibleObjectives, progress, plainToHtml, toggleObjective, isClosed, isUrgent } from "./logic.mjs";
 import { openBrief } from "./secret.mjs";
 
 export const VIEW_TEMPLATE = `modules/${MODULE_ID}/templates/quest-view.hbs`;
@@ -88,6 +88,8 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     isGM,
     status,
     hidden: status === "hidden",
+    closed: isClosed(status),
+    urgent: isUrgent(page),
     statusLabel: L(`MQL.Status.${status}`),
     statusIcon: STATUS_ICONS[status],
     statuses: isGM ? STATUSES.map(value => ({ value, label: L(`MQL.Status.${value}`), selected: value === status })) : [],
@@ -147,6 +149,7 @@ export function activateQuestView(root, page) {
   on("reveal", () => setStatus(page, "active"));
   on("hide", () => setStatus(page, "hidden"));
   on("edit", () => page.sheet.render({ force: true }));
+  on("toggle-urgent", () => page.update({ "system.urgent": !page.system.urgent }));
   on("toggle-done", button => toggle(page, button.dataset.id, "done"));
   on("toggle-reveal", button => toggle(page, button.dataset.id, "revealed"));
 

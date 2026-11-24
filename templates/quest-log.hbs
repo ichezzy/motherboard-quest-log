@@ -20,6 +20,7 @@
         <button type="button" class="mql-item {{#if selected}}active{{/if}}" data-action="select" data-uuid="{{uuid}}">
           {{#if img}}<img src="{{img}}" alt="">{{else}}<span class="mql-item-icon"><i class="fa-solid fa-scroll" inert></i></span>{{/if}}
           <span class="mql-item-name">{{name}}</span>
+          {{#if urgent}}<span class="mql-urgent" data-tooltip="{{localize "MQL.View.Urgent"}}"><i class="fa-solid fa-fire" inert></i></span>{{/if}}
           {{#if progress}}<span class="mql-item-progress">{{progress}}</span>{{/if}}
           <span class="mql-status" data-status="{{status}}" data-tooltip="{{statusLabel}}"><i class="{{statusIcon}}" inert></i></span>
         </button>

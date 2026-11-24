@@ -12,6 +12,7 @@
       {{#if showTitle}}<h{{headingLevel}} class="mql-quest-name">{{name}}</h{{headingLevel}}>{{/if}}
       <div class="mql-meta">
         <span class="mql-status" data-status="{{status}}"><i class="{{statusIcon}}" inert></i> {{statusLabel}}</span>
+        {{#if urgent}}<span class="mql-urgent"><i class="fa-solid fa-fire" inert></i> {{localize "MQL.View.Urgent"}}</span>{{/if}}
         {{#if giver.name}}
         <span class="mql-giver"><i class="fa-solid fa-user" inert></i>
           {{#if giver.canOpen}}<a class="mql-giver-link" data-mql-action="open-giver" data-tooltip="{{localize "MQL.View.OpenGiver"}}">{{giver.name}}</a>{{else}}{{giver.name}}{{/if}}
@@ -36,6 +37,12 @@
         {{#each statuses}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
       </select>
     </label>
+    {{#unless closed}}
+    <button type="button" data-mql-action="toggle-urgent" aria-pressed="{{#if urgent}}true{{else}}false{{/if}}"
+            class="{{#if urgent}}mql-urgent-on{{/if}}">
+      <i class="fa-solid fa-fire" inert></i> {{#if urgent}}{{localize "MQL.View.NotUrgent"}}{{else}}{{localize "MQL.View.MarkUrgent"}}{{/if}}
+    </button>
+    {{/unless}}
     <button type="button" data-mql-action="edit"><i class="fa-solid fa-pen-to-square" inert></i> {{localize "MQL.View.Edit"}}</button>
   </div>
   {{/if}}

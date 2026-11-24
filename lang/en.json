@@ -27,6 +27,10 @@
           "label": "Status",
           "hint": "Hidden quests are invisible to players. Any other status shows the quest to everyone."
         },
+        "urgent": {
+          "label": "Urgent",
+          "hint": "Only one quest is urgent at a time - marking this one clears the others. Players see it, and it moves to the top of the list. Cleared when the quest closes."
+        },
         "giver": {
           "uuid": { "label": "Linked actor" },
           "name": {
@@ -159,6 +163,9 @@
       "HideObjective": "Hide from players",
       "Brief": "GM Brief",
       "Empty": "Nothing known yet.",
+      "Urgent": "Urgent",
+      "MarkUrgent": "Mark urgent",
+      "NotUrgent": "Not urgent",
       "OpenGiver": "Open actor",
       "GiverNoAccess": "You don't have access to this actor."
     },
@@ -176,6 +183,7 @@
     },
     "Notify": {
       "Revealed": "New quest: {quest}",
+      "Urgent": "Urgent: {quest}",
       "ObjectiveRevealed": "New objective in {quest}: {text}",
       "ObjectiveDone": "Objective complete in {quest}: {text}",
       "Closed": {

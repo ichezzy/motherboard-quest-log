@@ -3,7 +3,7 @@
  * Everyone can open it. Players see what they may see, the GM sees everything.
  */
 import { MODULE_ID, TABS, STATUS_ICONS } from "./constants.mjs";
-import { tabOf, progress, sortQuests } from "./logic.mjs";
+import { tabOf, progress, sortQuests, isUrgent } from "./logic.mjs";
 import { allQuests, canSee } from "./visibility.mjs";
 import { questContext, activateQuestView } from "./quest-view.mjs";
 import { createQuest } from "./journal.mjs";
@@ -82,6 +82,7 @@ export class QuestLog extends HandlebarsApplicationMixin(ApplicationV2) {
           statusLabel: L(`MQL.Status.${status}`),
           statusIcon: STATUS_ICONS[status],
           progress: total ? `${done}/${total}` : "",
+          urgent: isUrgent(page),
           selected: page.uuid === this.#selected
         };
       }),

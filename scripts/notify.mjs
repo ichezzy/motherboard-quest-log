@@ -18,6 +18,7 @@ function message(page, event) {
     case "objective-revealed": return F("MQL.Notify.ObjectiveRevealed", { quest, text: plainLabel(event.text) });
     case "objective-done": return F("MQL.Notify.ObjectiveDone", { quest, text: plainLabel(event.text) });
     case "closed": return F(`MQL.Notify.Closed.${event.status}`, { quest });
+    case "urgent": return F("MQL.Notify.Urgent", { quest });
     default: return null;
   }
 }

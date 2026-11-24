@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  tabOf, ownershipFor, visibleObjectives, progress, sortQuests,
+  tabOf, ownershipFor, visibleObjectives, progress, sortQuests, isUrgent,
   addObjective, removeObjective, moveObjective, toggleObjective,
   questEvents, escapeHtml, plainToHtml, plainLabel
 } from "../scripts/logic.mjs";
@@ -39,6 +39,24 @@ test("progress ignores optional and unrevealed objectives for players", () => {
 test("quests sort by name, numbers naturally", () => {
   const names = sortQuests([{ name: "Quest 10" }, { name: "quest 2" }, { name: "Das Klopfen" }]).map(q => q.name);
   assert.deepEqual(names, ["Das Klopfen", "quest 2", "Quest 10"]);
+});
+
+test("the urgent quest comes first, but not once it is closed", () => {
+  const list = [
+    { name: "A", status: "active" },
+    { name: "Z", status: "active", urgent: true },
+    { name: "B", status: "completed", urgent: true }
+  ];
+  assert.deepEqual(sortQuests(list).map(q => q.name), ["Z", "A", "B"]);
+  assert.equal(isUrgent({ system: { status: "active", urgent: true } }), true);
+  assert.equal(isUrgent({ system: { status: "failed", urgent: true } }), false);
+});
+
+test("events: a visible quest becomes urgent", () => {
+  const before = { status: "active", urgent: false, objectives: [] };
+  assert.deepEqual(questEvents(before, { ...before, urgent: true }), [{ kind: "urgent" }]);
+  assert.deepEqual(questEvents({ ...before, urgent: true }, { ...before, urgent: true }), []);
+  assert.deepEqual(questEvents({ ...before, status: "hidden" }, { ...before, urgent: true }), [{ kind: "revealed" }]);
 });
 
 test("objectives: add, remove, move, toggle", () => {

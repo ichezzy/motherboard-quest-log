@@ -36,9 +36,18 @@ export function progress(objectives = [], isGM = false) {
   return { done: counted.filter(o => o.done).length, total: counted.length };
 }
 
-/** Sort quests by name, like a list a human would write. */
+/** Is a quest urgent right now? Only open quests can be. Works on pages and plain objects. */
+export function isUrgent(quest) {
+  const urgent = quest.urgent ?? quest.system?.urgent;
+  const status = quest.status ?? quest.system?.status;
+  return Boolean(urgent) && !isClosed(status);
+}
+
+/** Urgent quest first, then by name, like a list a human would write. */
 export function sortQuests(quests) {
-  return [...quests].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }));
+  return [...quests].sort((a, b) =>
+    (isUrgent(b) - isUrgent(a)) || a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true })
+  );
 }
 
 /* -------------------------------------------- */
@@ -79,8 +88,8 @@ export function toggleObjective(list, id, key) {
 
 /**
  * What players should hear about after an update.
- * @param {{status: string, objectives: object[]}} before
- * @param {{status: string, objectives: object[]}} after
+ * @param {{status: string, urgent?: boolean, objectives: object[]}} before
+ * @param {{status: string, urgent?: boolean, objectives: object[]}} after
  * @returns {Array<{kind: string, status?: string, text?: string}>}
  */
 export function questEvents(before, after) {
@@ -91,6 +100,7 @@ export function questEvents(before, after) {
   if (!wasVisible) return [{ kind: "revealed" }];
 
   const events = [];
+  if (isUrgent(after) && !isUrgent(before)) events.push({ kind: "urgent" });
   const old = new Map((before.objectives ?? []).map(o => [o.id, o]));
   for (const o of after.objectives ?? []) {
     if (!o.revealed) continue;
