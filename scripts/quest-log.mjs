@@ -2,7 +2,7 @@
  * The Quest Log window: tabs, a list of quests, the selected quest on the right.
  * Everyone can open it. Players see what they may see, the GM sees everything.
  */
-import { MODULE_ID, TABS, STATUS_ICONS } from "./constants.mjs";
+import { MODULE_ID, TABS, STATUS_ICONS, MAX_THREADS } from "./constants.mjs";
 import { tabOf, progress, sortQuests, isUrgent } from "./logic.mjs";
 import { allQuests, canSee } from "./visibility.mjs";
 import { questContext, activateQuestView } from "./quest-view.mjs";
@@ -74,10 +74,13 @@ export class QuestLog extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#selected = selected?.uuid ?? null;
 
     const session = isGM ? currentSession() : 0;
+    // Quest Guide: two to four threads at a time.
+    const open = groups.active.length;
     return Object.assign(context, {
       isGM,
       sessionLabel: session ? F("MQL.Session.Current", { n: session }) : L("MQL.Session.NotSet"),
       due: isGM ? dueCount(session) : 0,
+      threadsHint: isGM && this.#tab === "active" && open > MAX_THREADS ? F("MQL.Log.TooManyThreads", { n: open, max: MAX_THREADS }) : "",
       tabs: tabs.map(id => ({ id, label: L(`MQL.Tab.${id}`), count: groups[id].length, active: id === this.#tab })),
       quests: list.map(page => {
         const { done, total } = progress(page.system.objectives, isGM);

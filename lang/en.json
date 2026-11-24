@@ -280,6 +280,7 @@
       "NewQuestName": "New Quest",
       "JournalName": "Quest Log",
       "Select": "Select a quest.",
+      "TooManyThreads": "{n} active quests - the Quest Guide suggests two to {max} threads at a time, only one of them urgent.",
       "Empty": {
         "active": "No active quests.",
         "closed": "No closed quests yet.",

@@ -43,29 +43,40 @@ For quick tests without a release:
 - **Description** - what the group knows.
 - **Objectives** - text plus *Revealed*, *Done*, *Optional*; reorder and delete with the buttons. Players only see revealed objectives. Optional objectives don't count towards progress.
 - **The group's decision** - plain text; players see it in its own box as soon as it is filled in.
+- **Clues** (Three Clue Rule) - add a *conclusion* the group should draw ("The trader is a Gutter") and the clues that lead there. Drag a journal page, a Data Carrier (page or loot item), an item or an actor onto a clue to link it, or onto a conclusion for a new clue. Each conclusion shows "2 of 3 found" and a hint below three clues. Clues linked to a journal page or journal count as **found automatically** as soon as a player may see that document (e.g. the Data Carrier module unlocks it, or you show it); everything else you tick. Players only see found clues - never the conclusion - and get "New clue in …".
+- **Rewards** - drop items (same item twice adds one; set the quantity), enter currency in Daggerheart's slots (names from the Homebrew setting, e.g. Ferrond's Bits, Bytes, Chunks) and write other rewards as text (a contact, a favour, reputation). Players see nothing of it until it is handed out.
 - **GM Brief** - the eight fields of the quest profile from the Quest Guide: Hook, Who wants what, What the group can do, The twist, The choice, Reward, Consequences later, Secret.
 - **Paste quest profile** - paste a profile from your notes (Markdown, e.g. Obsidian) and the eight fields are filled in; the heading becomes the quest name. German labels (`**Aufhänger:**`, `**Wer will was:**`, `**Die Wendung:**` …) and English ones (`**Hook:**` …) both work; wikilinks, bold and vault markers become plain text.
+- **Follow-ups** - consequences that come back later: a text and "session 7" (new rows default to the next session). GM only.
 
-**View** (journal page and Quest Log): portrait, status, quest giver, location, progress, description, objectives. Name and portrait of the quest giver open the actor sheet for everyone with at least *Limited* permission on the actor (the GM always); for everyone else they are plain text. The GM additionally has:
+**View** (journal page and Quest Log): portrait, status, quest giver, location, progress, description, objectives, found clues, received rewards. Name and portrait of the quest giver open the actor sheet for everyone with at least *Limited* permission on the actor (the GM always); for everyone else they are plain text. Linked clue documents open the same way. The GM additionally has:
 - **Reveal to players** / **Hide from players**, a status picker and **Mark urgent**
 - a checkbox and an eye per objective: mark done, reveal one by one
+- all conclusions with their clues and a checkbox per clue
+- the planned rewards and **Hand out rewards**
+- the follow-ups with a checkbox each
 - the GM brief in a collapsible box
 - **Edit**
 
-**Announcements:** Everyone who can see the quest gets a short notice when the GM reveals a quest, reveals an objective, ticks a revealed objective done, marks the quest urgent, or closes it (completed / failed / abandoned). Editing text stays silent, and so does everything while a quest is hidden.
+**Handing out rewards:** setting a quest with rewards to *Completed* opens the hand-out (also via **Hand out rewards**). Each item goes to the party (Daggerheart's active party) or a character; each currency to the party, a character, or split evenly among the characters (the rest goes to the party). Items land in the inventory - stacked if the actor has the same one - and currency in the purse. A chat message tells everyone, and players see "Received" in the quest. Each quest pays out once; "Allow handing out again" in the edit window resets that (nothing is taken back).
+
+**Sessions and follow-ups:** the module counts sessions. On your first login of a day it asks "Is today session 5?" - *Start session* or *Not today* (prep days). The Quest Log shows the session number (click to change it) and a bell with the number of due follow-ups. When a session starts and something is due, the **Follow-ups** window opens: everything due (oldest first, with how late it is), each with *Done* or *Next session*, and what is coming up.
+
+**Threads:** with more than four active quests the GM gets a hint in the Quest Log (Quest Guide: two to four threads, one urgent).
+
+**Announcements:** Everyone who can see the quest gets a short notice when the GM reveals a quest, reveals an objective, ticks a revealed objective done, a clue is found, the quest becomes urgent, or it closes (completed / failed / abandoned). Editing text stays silent, and so does everything while a quest is hidden.
 
 ## Secret mode
 
-Foundry 14 sends every journal page to every client - hiding a page doesn't stop someone who opens the browser console. In **secret mode** the GM brief is only stored encrypted (AES-GCM 256, key via PBKDF2 from the GM's secret word; same scheme as the Data Carrier module). The word stays in the GM's browser; the world only holds salt and a check value.
+Foundry 14 sends every journal page to every client - hiding a page doesn't stop someone who opens the browser console. In **secret mode** the GM's parts of a quest - the brief, the conclusions and the follow-up texts - are only stored encrypted, as one package per quest (AES-GCM 256, key via PBKDF2 from the GM's secret word; same scheme as the Data Carrier module). The word stays in the GM's browser; the world only holds salt and a check value.
 
 - *Settings → Motherboard: Quest Log → Secret mode*: set a word, unlock in another browser, encrypt leftovers, forget the word in this browser, or turn secret mode off (decrypts everything).
-- **One word for both modules:** if the Data Carrier module knows a secret word in this browser, the Quest Log uses it - on first start it turns secret mode on with that word and encrypts every brief written so far.
-- Without the word the brief stays shut: the view says so, and the edit window shows no brief fields, so nothing can be overwritten.
-- Still readable through the console: names, descriptions and objectives of hidden quests. Only the brief is encrypted.
+- **One word for both modules:** if the Data Carrier module knows a secret word in this browser, the Quest Log uses it - on first start it turns secret mode on with that word and encrypts everything written so far.
+- Without the word the secret parts stay shut: the view says so, and the edit window shows no brief fields and locked conclusion and follow-up texts, so nothing can be overwritten. Clues, session numbers and ticks still work.
+- Still readable through the console: names, descriptions, objectives, clue texts and rewards of hidden quests. Briefs from 0.2 open as before.
 
 ## Roadmap
 
-- **Phase 2b - more tools from the Quest Guide:** consequences with a reminder, clues (incl. data carriers), rewards.
 - **Phase 3 - style and extras:** White Signal skin, on-screen tracker, player notes, "Open in Obsidian" button.
 
 ## Files
@@ -79,7 +90,11 @@ Foundry 14 sends every journal page to every client - hiding a page doesn't stop
 | `scripts/visibility.mjs` | Status → ownership, who sees what |
 | `scripts/notify.mjs` | Announcements over the module socket |
 | `scripts/journal.mjs` | Journal "Quest Log", new quests |
-| `scripts/secret.mjs`, `scripts/crypto.mjs`, `scripts/secret-config.mjs` | Secret mode: key, encrypting the brief, settings window |
+| `scripts/secret.mjs`, `scripts/crypto.mjs`, `scripts/secret-config.mjs` | Secret mode: key, encrypting brief, conclusions and follow-ups, settings window |
+| `scripts/clues.mjs` | Clue links, finding clues automatically |
+| `scripts/rewards.mjs` | Hand-out dialog: items, currency, chat |
+| `scripts/session.mjs` | Session number and the daily question |
+| `scripts/follow-ups.mjs` | Follow-ups window (reminders) |
 | `scripts/profile.mjs` | "Paste quest profile" parser (tested) |
 | `scripts/directory.mjs` | Button in the Journal sidebar |
 | `scripts/logic.mjs` | Pure helpers (tested) |

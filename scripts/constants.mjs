@@ -43,3 +43,6 @@ export const MIN_CLUES = 3;
 
 /** Daggerheart's currency slots (Homebrew setting; Ferrond names them Bits, Bytes, Chunks). */
 export const CURRENCY_KEYS = ["coins", "handfuls", "bags", "chests"];
+
+/** Quest Guide: two to four threads at a time - more open quests get a hint for the GM. */
+export const MAX_THREADS = 4;
