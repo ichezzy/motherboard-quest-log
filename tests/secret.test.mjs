@@ -5,8 +5,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PAGE_TYPE } from "../scripts/constants.mjs";
+import { keyFrom, encrypt } from "../scripts/crypto.mjs";
 
 const DATA_CARRIER = "motherboard-data-carrier-journal";
+const WORD = "Mast am Rand der Deadband";
 const store = new Map();
 const messages = [];
 const blank = () => ({ hook: "", wants: "", approach: "", twist: "", choice: "", reward: "", consequences: "", secret: "" });
@@ -20,8 +22,14 @@ const journal = {
     }
   }
 };
-const page = (id, brief) => ({ id, uuid: `JournalEntry.j.JournalEntryPage.${id}`, type: PAGE_TYPE, parent: journal, system: { brief: { ...blank(), ...brief }, secret: "" } });
-const withTwist = page("a", { twist: "Der Händler ist ein Gutter." });
+const page = (id, brief, conclusions = []) => ({
+  id,
+  uuid: `JournalEntry.j.JournalEntryPage.${id}`,
+  type: PAGE_TYPE,
+  parent: journal,
+  system: { brief: { ...blank(), ...brief }, conclusions, clues: [], secret: "" }
+});
+const withTwist = page("a", { twist: "Der Händler ist ein Gutter." }, [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }]);
 const empty = page("b", {});
 journal.pages.contents.push(withTwist, empty);
 
@@ -40,31 +48,47 @@ globalThis.Hooks = { callAll() {} };
 
 const secret = await import("../scripts/secret.mjs");
 
-test("first start with the Data Carrier's word: secret mode is set up and briefs are encrypted", async () => {
-  store.set(`${DATA_CARRIER}.geheimWort`, "Mast am Rand der Deadband");
+test("first start with the Data Carrier's word: secret mode is set up, brief and conclusions are encrypted", async () => {
+  store.set(`${DATA_CARRIER}.geheimWort`, WORD);
   await secret.loadKey();
   assert.equal(secret.secretModeOn(), true);
-  assert.ok(withTwist.system.secret, "brief is encrypted");
-  assert.ok(!withTwist.system.secret.includes("Gutter"), "no plain text in the world");
-  assert.equal(withTwist.system.brief.twist, "", "plain field is emptied");
-  assert.equal(empty.system.secret, "", "an empty brief stays as it is");
-  assert.equal(store.get("motherboard-quest-log.secretWord"), "Mast am Rand der Deadband");
-  assert.equal((await secret.openBrief(withTwist)).twist, "Der Händler ist ein Gutter.");
+  const stored = withTwist.system.secret;
+  assert.ok(stored, "encrypted");
+  assert.ok(!stored.includes("Gutter") && !stored.includes("lügt"), "no plain text in the world");
+  assert.equal(withTwist.system.brief.twist, "", "plain brief field is emptied");
+  assert.deepEqual(withTwist.system.conclusions, [{ id: "k1", text: "" }, { id: "k2", text: "" }], "ids stay, texts go");
+  assert.equal(empty.system.secret, "", "a quest without secret text stays as it is");
+  assert.equal(store.get("motherboard-quest-log.secretWord"), WORD);
+
+  const open = await secret.openSecrets(withTwist);
+  assert.equal(open.brief.twist, "Der Händler ist ein Gutter.");
+  assert.deepEqual(open.conclusions, [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }]);
 });
 
 test("saving in secret mode stores only the encrypted package", async () => {
-  const values = await secret.briefValues({ hook: "Ein Klopfen" });
+  const values = await secret.secretValues({ brief: { hook: "Ein Klopfen" }, conclusions: [{ id: "k", text: "Geheim" }] });
   assert.deepEqual(values.brief, blank());
-  assert.ok(values.secret && !values.secret.includes("Klopfen"));
+  assert.deepEqual(values.conclusions, [{ id: "k", text: "" }]);
+  assert.ok(values.secret && !values.secret.includes("Klopfen") && !values.secret.includes("Geheim"));
 });
 
-test("without the word the brief stays shut; the right word unlocks", async () => {
+test("a package from 0.2 (brief fields only) still opens", async () => {
+  const old = page("c", {}, [{ id: "k9", text: "" }]);
+  old.system.secret = await encrypt(await keyFrom(WORD, store.get("motherboard-quest-log.secretSalt")), { ...blank(), hook: "Alt" });
+  const open = await secret.openSecrets(old);
+  assert.equal(open.brief.hook, "Alt");
+  assert.deepEqual(open.conclusions, [{ id: "k9", text: "" }]);
+});
+
+test("without the word everything stays shut; the right word unlocks", async () => {
   await secret.forget();
   await assert.rejects(() => secret.openBrief(withTwist), /MQL.Secret.Locked/);
-  await assert.rejects(() => secret.briefValues({ hook: "x" }), /MQL.Secret.Locked/);
+  await assert.rejects(() => secret.secretValues({ brief: { hook: "x" } }), /MQL.Secret.Locked/);
+  assert.equal(await secret.secretsWritable(empty), false, "secret mode without key: nothing can be saved");
   await assert.rejects(() => secret.unlock("falsch"), /MQL.Secret.WrongWord/);
-  await secret.unlock("Mast am Rand der Deadband");
+  await secret.unlock(WORD);
   assert.equal((await secret.openBrief(withTwist)).twist, "Der Händler ist ein Gutter.");
+  assert.equal(await secret.secretsWritable(empty), true);
 });
 
 test("another browser without any word: not unlocked, GM gets a hint", async () => {
@@ -76,17 +100,18 @@ test("another browser without any word: not unlocked, GM gets a hint", async () 
   assert.deepEqual(messages.map(m => m[1]), ["MQL.Secret.EnterWord"]);
 });
 
-test("players can never open an encrypted brief", async () => {
+test("players can never open encrypted parts", async () => {
   game.user.isGM = false;
-  await assert.rejects(() => secret.openBrief(withTwist), /MQL.Secret.GMOnly/);
+  await assert.rejects(() => secret.openSecrets(withTwist), /MQL.Secret.GMOnly/);
   game.user.isGM = true;
 });
 
-test("turning secret mode off makes every brief readable again", async () => {
-  await secret.unlock("Mast am Rand der Deadband");
+test("turning secret mode off makes everything readable again", async () => {
+  await secret.unlock(WORD);
   await secret.turnOff();
   assert.equal(secret.secretModeOn(), false);
   assert.equal(withTwist.system.secret, "");
   assert.equal(withTwist.system.brief.twist, "Der Händler ist ein Gutter.");
+  assert.deepEqual(withTwist.system.conclusions, [{ id: "k1", text: "Der Händler lügt" }, { id: "k2", text: "" }]);
   assert.deepEqual(secret.secretStatus(), { total: 2, encrypted: 0, open: 1 });
 });

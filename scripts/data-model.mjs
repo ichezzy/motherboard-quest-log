@@ -2,6 +2,9 @@ import { STATUSES, BRIEF_FIELDS } from "./constants.mjs";
 
 const { HTMLField, StringField, BooleanField, ArrayField, SchemaField, DocumentUUIDField, FilePathField } = foundry.data.fields;
 
+const idField = () => new StringField({ required: true, blank: false, initial: () => foundry.utils.randomID() });
+const textField = () => new StringField({ required: true, blank: true, initial: "" });
+
 /**
  * Data of a journal page of type "Quest".
  * The quest title is the normal page name (`page.name`).
@@ -46,12 +49,31 @@ export class QuestData extends foundry.abstract.TypeDataModel {
       // What the group decided in the end. Plain text; players see it once it is filled in.
       outcome: new StringField({ required: true, blank: true, initial: "" }),
 
+      // Three Clue Rule: what the group should figure out. GM only - in secret mode the text
+      // is empty here and lives in `secret`.
+      conclusions: new ArrayField(new SchemaField({
+        id: idField(),
+        text: textField()
+      })),
+
+      // The clues that lead to a conclusion. Players only see found ones, never the conclusion.
+      // A linked journal page or Data Carrier counts as found once a player may see it (clues.mjs).
+      clues: new ArrayField(new SchemaField({
+        id: idField(),
+        conclusion: textField(),
+        text: textField(),
+        uuid: textField(),
+        name: textField(),
+        found: new BooleanField({ initial: false })
+      })),
+
       // GM only. Plain text with line breaks. Empty in secret mode - then it lives in `secret`.
       brief: new SchemaField(Object.fromEntries(
         BRIEF_FIELDS.map(key => [key, new StringField({ required: true, blank: true, initial: "" })])
       )),
 
-      // Secret mode: the brief, encrypted (see secret.mjs). Empty = brief is in plain text.
+      // Secret mode: brief and conclusion texts, encrypted as one package (see secret.mjs).
+      // Empty = everything is in plain text.
       secret: new StringField({ required: true, blank: true, initial: "" })
     };
   }

@@ -167,6 +167,107 @@
   resize: vertical;
 }
 
+/* Clues in the edit window */
+.mql-sheet .mql-conclusion-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--mql-line);
+  border-radius: 6px;
+  background: var(--mql-soft);
+}
+.mql-sheet .mql-conclusion-edit.mql-drag-over,
+.mql-sheet .mql-clue-row.mql-drag-over {
+  border-color: var(--mql-accent);
+  background: color-mix(in srgb, var(--mql-accent) 12%, transparent);
+}
+.mql-sheet .mql-conclusion-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.mql-sheet .mql-conclusion-head > i { color: var(--mql-accent); }
+.mql-sheet .mql-conclusion-head input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  font-weight: bold;
+}
+.mql-sheet .mql-clue-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.mql-sheet .mql-clue-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 13rem) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem;
+  border: 1px solid transparent;
+  border-radius: 5px;
+}
+.mql-sheet .mql-clue-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  min-height: 1.8rem;
+  padding: 0 0.15rem 0 0.4rem;
+  border: 1px solid var(--mql-line);
+  border-radius: 5px;
+  font-size: var(--font-size-12, 12px);
+}
+.mql-sheet .mql-clue-link-empty {
+  border-style: dashed;
+  color: var(--mql-muted);
+}
+.mql-sheet .mql-clue-link.mql-missing { color: var(--mql-bad); }
+.mql-sheet .mql-clue-link-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mql-sheet .mql-clue-link .mql-icon-button {
+  width: 1.4rem;
+  height: 1.4rem;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.mql-sheet .mql-found-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: var(--font-size-12, 12px);
+  white-space: nowrap;
+}
+.mql-sheet .mql-found-toggle input { margin: 0; }
+.mql-sheet .mql-add.mql-add-small {
+  margin-top: 0.1rem;
+  font-size: var(--font-size-12, 12px);
+}
+
+.mql-found-count {
+  flex: 0 0 auto;
+  padding: 0 0.45rem;
+  border: 1px solid var(--mql-line);
+  border-radius: 999px;
+  font-size: var(--font-size-11, 11px);
+  white-space: nowrap;
+  color: var(--mql-muted);
+}
+.mql-found-count.mql-few {
+  border-color: color-mix(in srgb, #e0703a 60%, transparent);
+  color: #e0703a;
+}
+
 /* ---------- Quest view (journal page and Quest Log) ---------- */
 
 .mql-quest {
@@ -323,6 +424,80 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--mql-muted);
+}
+
+/* Clues in the view: like objectives */
+.mql-quest .mql-clues h4 {
+  margin: 0 0 0.35rem;
+  border: none;
+  font-size: var(--font-size-12, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mql-muted);
+}
+.mql-quest .mql-clues ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.mql-quest .mql-conclusion + .mql-conclusion { margin-top: 0.5rem; }
+.mql-quest .mql-conclusion-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-bottom: 0.25rem;
+  font-weight: bold;
+}
+.mql-quest .mql-conclusion-head > i { color: var(--mql-accent); }
+.mql-quest .mql-conclusion-text { flex: 1; }
+.mql-quest .mql-conclusion-head .mql-found-count { font-weight: normal; }
+.mql-quest .mql-clues-gm ul { padding-left: 1.2rem; }
+.mql-quest .mql-clue {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: var(--mql-soft);
+}
+.mql-quest .mql-clue .mql-check {
+  margin-top: 0.2em;
+  color: var(--mql-accent);
+}
+.mql-quest .mql-clue .mql-icon-button {
+  width: 1.6rem;
+  height: 1.6rem;
+  margin: -0.1rem 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--mql-accent);
+}
+.mql-quest .mql-clue.mql-unrevealed {
+  opacity: 0.6;
+  background: none;
+  border-style: dashed;
+  border-color: var(--mql-line);
+}
+.mql-quest .mql-clue-text { flex: 1 1 12rem; }
+.mql-quest .mql-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--mql-line);
+  border-radius: 999px;
+  font-size: var(--font-size-12, 12px);
+}
+.mql-quest a.mql-link { cursor: pointer; }
+.mql-quest a.mql-link:hover {
+  border-color: var(--mql-accent);
+  color: var(--mql-accent);
 }
 
 .mql-quest .mql-outcome {

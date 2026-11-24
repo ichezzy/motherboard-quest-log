@@ -1,7 +1,7 @@
 /**
  * Pure helpers without Foundry globals, so `node --test` can check them.
  */
-import { CLOSED_STATUSES, OWNERSHIP } from "./constants.mjs";
+import { CLOSED_STATUSES, OWNERSHIP, MIN_CLUES } from "./constants.mjs";
 
 /* -------------------------------------------- */
 /*  Status and visibility                       */
@@ -62,12 +62,14 @@ export function addObjective(list, id) {
   return [...list, blankObjective(id)];
 }
 
-export function removeObjective(list, id) {
+/* Lists with ids (objectives, conclusions, clues …) */
+
+export function removeById(list, id) {
   return list.filter(o => o.id !== id);
 }
 
-/** Move an objective up (delta -1) or down (delta +1). Out of range → unchanged. */
-export function moveObjective(list, id, delta) {
+/** Move an entry up (delta -1) or down (delta +1). Out of range → unchanged. */
+export function moveById(list, id, delta) {
   const from = list.findIndex(o => o.id === id);
   const to = from + delta;
   if (from < 0 || to < 0 || to >= list.length) return [...list];
@@ -77,9 +79,59 @@ export function moveObjective(list, id, delta) {
   return copy;
 }
 
-/** Flip a boolean flag ("revealed", "done", "optional") of one objective. */
-export function toggleObjective(list, id, key) {
+/** Flip a boolean flag (e.g. "revealed", "done", "found") of one entry. */
+export function toggleById(list, id, key) {
   return list.map(o => (o.id === id ? { ...o, [key]: !o[key] } : o));
+}
+
+/** Set fields of one entry. */
+export function patchById(list, id, patch) {
+  return list.map(o => (o.id === id ? { ...o, ...patch } : o));
+}
+
+export const removeObjective = removeById;
+export const moveObjective = moveById;
+export const toggleObjective = toggleById;
+
+/* -------------------------------------------- */
+/*  Clues (Three Clue Rule)                     */
+/* -------------------------------------------- */
+
+export function blankConclusion(id) {
+  return { id, text: "" };
+}
+
+export function blankClue(id, conclusion) {
+  return { id, conclusion, text: "", uuid: "", name: "", found: false };
+}
+
+/** A conclusion goes together with its clues. */
+export function removeConclusion({ conclusions = [], clues = [] }, id) {
+  return { conclusions: removeById(conclusions, id), clues: clues.filter(c => c.conclusion !== id) };
+}
+
+/**
+ * Conclusions with their clues and counts, in the order of the conclusions.
+ * Clues of a conclusion that no longer exists are left out.
+ * @returns {Array<object & {clues: object[], found: number, total: number, few: boolean}>}
+ */
+export function clueGroups(conclusions = [], clues = [], minimum = MIN_CLUES) {
+  return conclusions.map(conclusion => {
+    const own = clues.filter(c => c.conclusion === conclusion.id);
+    const found = own.filter(c => c.found).length;
+    return { ...conclusion, clues: own, found, total: own.length, few: own.length < minimum };
+  });
+}
+
+/** Clues players see: found ones of existing conclusions, in the order they were written down. */
+export function foundClues(conclusions = [], clues = []) {
+  const known = new Set(conclusions.map(c => c.id));
+  return clues.filter(c => c.found && known.has(c.conclusion));
+}
+
+/** What a clue is called in a notification or list: its text, else the linked document's name. */
+export function clueLabel(clue) {
+  return clue.text?.trim() || clue.name || "";
 }
 
 /* -------------------------------------------- */
@@ -88,8 +140,8 @@ export function toggleObjective(list, id, key) {
 
 /**
  * What players should hear about after an update.
- * @param {{status: string, urgent?: boolean, objectives: object[]}} before
- * @param {{status: string, urgent?: boolean, objectives: object[]}} after
+ * @param {{status: string, urgent?: boolean, objectives: object[], conclusions?: object[], clues?: object[]}} before
+ * @param {{status: string, urgent?: boolean, objectives: object[], conclusions?: object[], clues?: object[]}} after
  * @returns {Array<{kind: string, status?: string, text?: string}>}
  */
 export function questEvents(before, after) {
@@ -107,6 +159,10 @@ export function questEvents(before, after) {
     const prev = old.get(o.id);
     if (!prev?.revealed) events.push({ kind: "objective-revealed", text: o.text });
     else if (o.done && !prev.done) events.push({ kind: "objective-done", text: o.text });
+  }
+  const wasFound = new Set(foundClues(before.conclusions, before.clues).map(c => c.id));
+  for (const clue of foundClues(after.conclusions, after.clues)) {
+    if (!wasFound.has(clue.id)) events.push({ kind: "clue", text: clueLabel(clue) });
   }
   if (after.status !== before.status && isClosed(after.status)) events.push({ kind: "closed", status: after.status });
   return events;

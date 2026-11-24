@@ -112,7 +112,30 @@
       "NoObjectives": "No objectives yet.",
       "Brief": "GM Brief",
       "BriefHint": "Only you see this, but it is not encrypted: a player who opens the browser console could read it. Turn on Settings → Motherboard: Quest Log → Secret mode.",
-      "BriefEncrypted": "Only you see this. Encrypted when saved - only your browser knows the secret word."
+      "BriefEncrypted": "Only you see this. Encrypted when saved - only your browser knows the secret word.",
+      "Clues": "Clues",
+      "CluesHint": "Three Clue Rule: for every conclusion the group should draw, at least three clues in different places. Players only see found clues - never the conclusion. Drag a journal page, Data Carrier, item or actor onto a clue to link it, or onto a conclusion for a new clue. Linked journal pages and Data Carriers count as found as soon as a player may see them.",
+      "Conclusion": "Conclusion",
+      "ConclusionPlaceholder": "What should the group figure out?",
+      "ConclusionsLocked": "The conclusions are encrypted - enter the secret word under Settings → Motherboard: Quest Log → Secret mode to read and change them. Clues still work.",
+      "Encrypted": "Encrypted",
+      "FewClues": "Fewer than three clues - the Quest Guide wants at least three per conclusion.",
+      "AddConclusion": "Add conclusion",
+      "DeleteConclusion": "Delete conclusion and its clues",
+      "NoConclusions": "No conclusions yet.",
+      "Clue": "Clue",
+      "CluePlaceholder": "Where and how can the group find it?",
+      "ClueDrop": "Drop a journal page, Data Carrier, item or actor here to link it",
+      "ClueDropOnly": "Only journal pages, journals, items and actors can be linked.",
+      "NoLink": "No link",
+      "ClearLink": "Remove link",
+      "Found": "Found",
+      "AddClue": "Add clue",
+      "DeleteClue": "Delete clue"
+    },
+    "Clue": {
+      "Missing": "The linked document doesn't exist any more.",
+      "NoAccess": "You don't have access to this document."
     },
     "Paste": {
       "Button": "Paste quest profile",
@@ -125,8 +148,8 @@
     "Secret": {
       "Name": "Secret mode",
       "Label": "Secret mode",
-      "Hint": "Stores the GM brief of every quest encrypted, so players can't read it - not even through the browser console.",
-      "Explanation": "Foundry sends every journal page to every player. Hiding a page doesn't stop someone who opens the browser console. In secret mode the GM brief is only stored encrypted. The key comes from your secret word, which stays in this browser and never reaches the server. Use the same word as in the Data Carrier module and you only need one.",
+      "Hint": "Stores the GM brief and the conclusions of every quest encrypted, so players can't read them - not even through the browser console.",
+      "Explanation": "Foundry sends every journal page to every player. Hiding a page doesn't stop someone who opens the browser console. In secret mode the GM brief and the conclusions are only stored encrypted. The key comes from your secret word, which stays in this browser and never reaches the server. Use the same word as in the Data Carrier module and you only need one.",
       "NoCrypto": "This browser has no Web Crypto (Foundry must be served via HTTPS or localhost).",
       "StatusOn": "Secret mode is on",
       "StatusOff": "Secret mode is off",
@@ -174,7 +197,12 @@
       "MarkUrgent": "Mark urgent",
       "NotUrgent": "Not urgent",
       "OpenGiver": "Open actor",
-      "GiverNoAccess": "You don't have access to this actor."
+      "GiverNoAccess": "You don't have access to this actor.",
+      "Clues": "Clues",
+      "ConclusionHidden": "Conclusion encrypted",
+      "FoundCount": "{found} of {total} found",
+      "ToggleFound": "Mark found / not found",
+      "OpenLink": "Open"
     },
     "Log": {
       "Open": "Quest Log",
@@ -193,6 +221,7 @@
       "Urgent": "Urgent: {quest}",
       "ObjectiveRevealed": "New objective in {quest}: {text}",
       "ObjectiveDone": "Objective complete in {quest}: {text}",
+      "Clue": "New clue in {quest}: {text}",
       "Closed": {
         "completed": "Quest completed: {quest}",
         "failed": "Quest failed: {quest}",

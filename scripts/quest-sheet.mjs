@@ -1,22 +1,37 @@
 import { MODULE_ID, BRIEF_FIELDS } from "./constants.mjs";
-import { addObjective, removeObjective, moveObjective } from "./logic.mjs";
+import {
+  addObjective, removeObjective, moveObjective, removeById, patchById,
+  blankConclusion, blankClue, removeConclusion, clueGroups
+} from "./logic.mjs";
 import { VIEW_TEMPLATE, questContext, activateQuestView } from "./quest-view.mjs";
-import { openBrief, briefValues, secretModeOn, isEncrypted, keyReady } from "./secret.mjs";
+import { openSecrets, secretValues, secretsWritable, secretModeOn, isEncrypted, pickBrief } from "./secret.mjs";
 import { parseQuestProfile } from "./profile.mjs";
+import { linkInfo, linkFromDrop, openToPlayers } from "./clues.mjs";
 
 const { JournalEntryPageHandlebarsSheet } = foundry.applications.sheets.journal;
 
 export const EDIT_TEMPLATE = `modules/${MODULE_ID}/templates/quest-edit.hbs`;
 
+const L = key => game.i18n.localize(key);
+const F = (key, data) => game.i18n.format(key, data);
+
+/** Same conclusions, same texts, same order? */
+function sameTexts(a, b) {
+  return a.length === b.length && a.every((entry, i) => entry.id === b[i].id && (entry.text ?? "") === (b[i].text ?? ""));
+}
+
 /**
  * One sheet, two modes - like Foundry's own pages:
  * view inside the journal, edit in a window of its own.
+ *
+ * The lists with buttons (conclusions and clues) have no `name` in the form: they are read from
+ * the form and saved by their own handlers, so a form submit never races with them.
  */
 export class QuestSheet extends JournalEntryPageHandlebarsSheet {
   static DEFAULT_OPTIONS = {
     classes: ["mql-sheet"],
     window: { icon: "fa-solid fa-list-check" },
-    position: { width: 680, height: 820 }
+    position: { width: 720, height: 820 }
   };
 
   static EDIT_PARTS = {
@@ -38,8 +53,11 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     content: { template: VIEW_TEMPLATE }
   };
 
-  /** Objective whose text field gets the focus after the next render (a freshly added one). */
-  #focusObjective = null;
+  /** Field that gets the focus after the next render (a freshly added row). */
+  #focus = null;
+
+  /** Can brief and conclusions be read and saved in this browser right now? */
+  #secretsOpen = false;
 
   /** @inheritDoc */
   async _prepareContext(options) {
@@ -52,41 +70,54 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
         showTitle: page.title?.show !== false,
         headingLevel: page.title?.level ?? 1
       }));
-    } else {
-      const source = page._source.system;
-      context.giver = source.giver;
-      context.hasGiver = Boolean(source.giver.uuid || source.giver.name || source.giver.img);
-      context.objectives = source.objectives;
-      context.secretOn = secretModeOn();
-      // Encrypted without key: show no fields, so saving can't overwrite the brief with blanks.
-      let brief = null;
-      try {
-        brief = await openBrief(page);
-      } catch (err) {
-        context.briefLocked = err.message;
-      }
-      context.briefFields = brief
-        ? BRIEF_FIELDS.map(key => ({ field: fields.brief.fields[key], value: brief[key] }))
-        : [];
+      return context;
     }
+
+    const source = page._source.system;
+    context.giver = source.giver;
+    context.hasGiver = Boolean(source.giver.uuid || source.giver.name || source.giver.img);
+    context.objectives = source.objectives;
+    context.secretOn = secretModeOn();
+
+    // Encrypted without key: show no secret fields, so saving can't overwrite them with blanks.
+    let secrets = null;
+    try {
+      secrets = await openSecrets(page);
+      if (!(await secretsWritable(page))) context.briefLocked = L("MQL.Secret.Locked");
+    } catch (err) {
+      context.briefLocked = err.message;
+    }
+    this.#secretsOpen = Boolean(secrets) && !context.briefLocked;
+    context.secretsLocked = !this.#secretsOpen;
+    context.briefFields = this.#secretsOpen
+      ? BRIEF_FIELDS.map(key => ({ field: fields.brief.fields[key], value: secrets.brief[key] }))
+      : [];
+
+    const conclusions = this.#secretsOpen ? secrets.conclusions : source.conclusions;
+    context.clueGroups = clueGroups(conclusions, source.clues).map(group => ({
+      ...group,
+      text: this.#secretsOpen ? group.text : "",
+      countLabel: F("MQL.View.FoundCount", { found: group.found, total: group.total }),
+      clues: group.clues.map(clue => ({ ...clue, link: linkInfo(clue) }))
+    }));
     return context;
   }
 
   /**
    * In secret mode the brief is never saved in plain text: it is merged with the stored
-   * brief and encrypted before the update. Without the key it is left untouched.
+   * secret parts and encrypted before the update - only if it really changed.
    * @inheritDoc
    */
   async _processSubmitData(event, form, submitData, options) {
     const system = submitData.system;
     const page = this.document;
     if (system?.brief && (secretModeOn() || isEncrypted(page))) {
-      if (await keyReady()) {
-        const stored = await openBrief(page);
-        Object.assign(system, await briefValues({ ...stored, ...system.brief }));
-      } else {
-        delete system.brief;
-        ui.notifications.error("MQL.Secret.Locked", { localize: true });
+      const submitted = system.brief;
+      delete system.brief;
+      if (this.#secretsOpen) {
+        const parts = await openSecrets(page);
+        const brief = pickBrief({ ...parts.brief, ...submitted });
+        if (BRIEF_FIELDS.some(f => brief[f] !== parts.brief[f])) Object.assign(system, await secretValues({ ...parts, brief }));
       }
     }
     return super._processSubmitData(event, form, submitData, options);
@@ -118,11 +149,12 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
         });
       }
     };
-    const rowId = button => button.closest(".mql-objective-row")?.dataset.id;
+    const rowId = button => button.closest("[data-id]")?.dataset.id;
+    const conclusionId = button => button.closest(".mql-conclusion-edit")?.dataset.id;
 
     on("add-objective", () => {
       const id = foundry.utils.randomID();
-      this.#focusObjective = id;
+      this.#focus = `.mql-objective-row[data-id='${id}'] input[data-field='text']`;
       this.#saveObjectives(addObjective(this.#readObjectives(), id));
     });
     on("delete-objective", button => this.#saveObjectives(removeObjective(this.#readObjectives(), rowId(button))));
@@ -131,23 +163,57 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     on("clear-giver", () => page.update({ "system.giver": { uuid: null, name: "", img: null } }));
     on("paste-profile", () => this.#pasteProfile());
 
-    const drop = el.querySelector("[data-mql-drop='giver']");
-    if (drop) {
-      drop.addEventListener("dragover", event => {
-        event.preventDefault();
-        drop.classList.add("mql-drag-over");
-      });
-      drop.addEventListener("dragleave", () => drop.classList.remove("mql-drag-over"));
-      drop.addEventListener("drop", event => {
-        drop.classList.remove("mql-drag-over");
-        this.#onDropGiver(event);
-      });
-    }
+    // Clues: saved by their own handlers, never by the form.
+    on("add-conclusion", () => {
+      const id = foundry.utils.randomID();
+      this.#focus = `.mql-conclusion-edit[data-id='${id}'] .mql-conclusion-head input`;
+      this.#saveClues({ conclusions: [...this.#readConclusions(), blankConclusion(id)] });
+    });
+    on("delete-conclusion", button => this.#saveClues(removeConclusion(
+      { conclusions: this.#readConclusions(), clues: this.#readClues() }, conclusionId(button)
+    )));
+    on("add-clue", button => {
+      const id = foundry.utils.randomID();
+      this.#focus = `.mql-clue-row[data-id='${id}'] input[data-field='text']`;
+      this.#saveClues({ clues: [...this.#readClues(), blankClue(id, conclusionId(button))] });
+    });
+    on("delete-clue", button => this.#saveClues({ clues: removeById(this.#readClues(), rowId(button)) }));
+    on("clear-link", button => this.#saveClues({ clues: patchById(this.#readClues(), rowId(button), { uuid: "", name: "" }) }));
 
-    if (this.#focusObjective) {
-      el.querySelector(`.mql-objective-row[data-id='${this.#focusObjective}'] input[data-field='text']`)?.focus();
-      this.#focusObjective = null;
+    const clueSet = el.querySelector("[data-mql-list='clues']");
+    clueSet?.addEventListener("change", event => {
+      event.stopPropagation(); // not a form submit
+      this.#saveClues();
+    });
+    // Drop on a clue: link it. Drop on a conclusion: a new clue with that link.
+    for (const zone of el.querySelectorAll(".mql-clue-row, .mql-conclusion-edit")) this.#dropZone(zone, event => this.#onDropClue(event, zone));
+
+    const giver = el.querySelector("[data-mql-drop='giver']");
+    if (giver) this.#dropZone(giver, event => this.#onDropGiver(event));
+
+    if (this.#focus) {
+      el.querySelector(this.#focus)?.focus();
+      this.#focus = null;
     }
+  }
+
+  /** Highlight while dragging over, call `onDrop` on drop. */
+  #dropZone(zone, onDrop) {
+    zone.addEventListener("dragover", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      zone.classList.add("mql-drag-over");
+    });
+    zone.addEventListener("dragleave", event => {
+      event.stopPropagation();
+      zone.classList.remove("mql-drag-over");
+    });
+    zone.addEventListener("drop", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      zone.classList.remove("mql-drag-over");
+      onDrop(event);
+    });
   }
 
   /**
@@ -167,12 +233,67 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     });
   }
 
+  #readConclusions() {
+    return [...this.element.querySelectorAll(".mql-conclusion-edit")].map(box => ({
+      id: box.dataset.id,
+      text: box.querySelector(".mql-conclusion-head input[data-field='text']")?.value ?? ""
+    }));
+  }
+
+  #readClues() {
+    return [...this.element.querySelectorAll(".mql-clue-row")].map(row => ({
+      id: row.dataset.id,
+      conclusion: row.closest(".mql-conclusion-edit")?.dataset.id ?? "",
+      text: row.querySelector("input[data-field='text']")?.value ?? "",
+      uuid: row.dataset.uuid ?? "",
+      name: row.dataset.name ?? "",
+      found: Boolean(row.querySelector("input[data-field='found']")?.checked)
+    }));
+  }
+
+  /**
+   * Save conclusions and clues (missing ones are read from the form). Conclusion texts are
+   * secret: they only change when they can be saved the right way, and only if they changed.
+   */
+  async #saveClues({ conclusions, clues } = {}) {
+    const page = this.document;
+    conclusions ??= this.#readConclusions();
+    clues ??= this.#readClues();
+    try {
+      const system = { clues };
+      if (this.#secretsOpen) {
+        const parts = await openSecrets(page);
+        if (!sameTexts(parts.conclusions, conclusions)) Object.assign(system, await secretValues({ ...parts, conclusions }));
+      }
+      await page.update({ system });
+    } catch (err) {
+      ui.notifications.error(err.message);
+    }
+  }
+
+  /** A document dropped on a clue (links it) or on a conclusion (new clue with that link). */
+  async #onDropClue(event, zone) {
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
+    const link = await linkFromDrop(data);
+    if (!link) {
+      ui.notifications.warn("MQL.Edit.ClueDropOnly", { localize: true });
+      return;
+    }
+    const patch = { uuid: link.uuid, name: link.name };
+    // Players may see it already: then it is found already.
+    if (openToPlayers(link.doc)) patch.found = true;
+    const clues = this.#readClues();
+    if (zone.classList.contains("mql-clue-row")) return this.#saveClues({ clues: patchById(clues, zone.dataset.id, patch) });
+    const clue = { ...blankClue(foundry.utils.randomID(), zone.dataset.id), ...patch };
+    this.#focus = `.mql-clue-row[data-id='${clue.id}'] input[data-field='text']`;
+    return this.#saveClues({ clues: [...clues, clue] });
+  }
+
   /**
    * "Paste quest profile": Markdown from the notes → GM brief fields (and the quest name
    * from the heading). Fields found replace what is there, the others stay.
    */
   async #pasteProfile() {
-    const L = key => game.i18n.localize(key);
     let data = null;
     try {
       data = await foundry.applications.api.DialogV2.input({
@@ -197,11 +318,12 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
     }
     const page = this.document;
     try {
-      const stored = await openBrief(page);
-      const update = { system: await briefValues({ ...stored, ...parsed.brief }) };
+      const parts = await openSecrets(page);
+      parts.brief = { ...parts.brief, ...parsed.brief };
+      const update = { system: await secretValues(parts) };
       if (parsed.name) update.name = parsed.name;
       await page.update(update);
-      ui.notifications.info(game.i18n.format("MQL.Paste.Done", { n: parsed.count }));
+      ui.notifications.info(F("MQL.Paste.Done", { n: parsed.count }));
     } catch (err) {
       ui.notifications.error(err.message);
     }
@@ -213,8 +335,6 @@ export class QuestSheet extends JournalEntryPageHandlebarsSheet {
 
   /** An actor dropped on the portrait becomes the quest giver. */
   async #onDropGiver(event) {
-    event.preventDefault();
-    event.stopPropagation();
     const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
     if (data?.type !== "Actor" || !data.uuid) {
       ui.notifications.warn("MQL.Edit.DropActorOnly", { localize: true });

@@ -80,6 +80,67 @@
 
   {{formField systemFields.outcome value=source.system.outcome elementType="textarea" stacked=true classes="mql-outcome-field"}}
 
+  {{!-- No `name` attributes in here: conclusions and clues are saved by their own handlers. --}}
+  <fieldset class="mql-clues-set" data-mql-list="clues">
+    <legend><i class="fa-solid fa-magnifying-glass" inert></i> {{localize "MQL.Edit.Clues"}}</legend>
+    <p class="hint">{{localize "MQL.Edit.CluesHint"}}</p>
+    {{#if secretsLocked}}{{#if clueGroups.length}}
+    <p class="mql-warning"><i class="fa-solid fa-key" inert></i> {{localize "MQL.Edit.ConclusionsLocked"}}</p>
+    {{/if}}{{/if}}
+    {{#each clueGroups}}
+    <div class="mql-conclusion-edit" data-id="{{id}}">
+      <div class="mql-conclusion-head">
+        <i class="fa-solid fa-lightbulb" inert></i>
+        <input type="text" data-field="text" value="{{text}}"
+               placeholder="{{#if ../secretsLocked}}{{localize "MQL.Edit.Encrypted"}}{{else}}{{localize "MQL.Edit.ConclusionPlaceholder"}}{{/if}}"
+               aria-label="{{localize "MQL.Edit.Conclusion"}}" {{#if ../secretsLocked}}disabled{{/if}}>
+        <span class="mql-found-count {{#if few}}mql-few{{/if}}"
+              {{#if few}}data-tooltip="{{localize "MQL.Edit.FewClues"}}"{{/if}}>{{countLabel}}</span>
+        {{#unless ../secretsLocked}}
+        <button type="button" class="mql-icon-button" data-mql-action="delete-conclusion"
+                data-tooltip="{{localize "MQL.Edit.DeleteConclusion"}}" aria-label="{{localize "MQL.Edit.DeleteConclusion"}}">
+          <i class="fa-solid fa-trash" inert></i></button>
+        {{/unless}}
+      </div>
+      <ol class="mql-clue-rows">
+        {{#each clues}}
+        <li class="mql-clue-row" data-id="{{id}}" data-uuid="{{uuid}}" data-name="{{name}}">
+          <span class="mql-clue-link {{#unless link}}mql-clue-link-empty{{/unless}} {{#if link.missing}}mql-missing{{/if}}"
+                data-tooltip="{{localize "MQL.Edit.ClueDrop"}}">
+            {{#if link}}
+            <i class="{{link.icon}}" inert></i><span class="mql-clue-link-name">{{link.name}}</span>
+            <button type="button" class="mql-icon-button" data-mql-action="clear-link"
+                    data-tooltip="{{localize "MQL.Edit.ClearLink"}}" aria-label="{{localize "MQL.Edit.ClearLink"}}">
+              <i class="fa-solid fa-xmark" inert></i></button>
+            {{else}}
+            <i class="fa-solid fa-link" inert></i><span class="mql-clue-link-name">{{localize "MQL.Edit.NoLink"}}</span>
+            {{/if}}
+          </span>
+          <input type="text" data-field="text" value="{{text}}"
+                 placeholder="{{localize "MQL.Edit.CluePlaceholder"}}" aria-label="{{localize "MQL.Edit.Clue"}}">
+          <label class="mql-found-toggle">
+            <input type="checkbox" data-field="found" {{checked found}}> {{localize "MQL.Edit.Found"}}
+          </label>
+          <button type="button" class="mql-icon-button" data-mql-action="delete-clue"
+                  data-tooltip="{{localize "MQL.Edit.DeleteClue"}}" aria-label="{{localize "MQL.Edit.DeleteClue"}}">
+            <i class="fa-solid fa-trash" inert></i></button>
+        </li>
+        {{/each}}
+      </ol>
+      <button type="button" class="mql-add mql-add-small" data-mql-action="add-clue">
+        <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Edit.AddClue"}}
+      </button>
+    </div>
+    {{else}}
+    <p class="mql-none">{{localize "MQL.Edit.NoConclusions"}}</p>
+    {{/each}}
+    {{#unless secretsLocked}}
+    <button type="button" class="mql-add" data-mql-action="add-conclusion">
+      <i class="fa-solid fa-plus" inert></i> {{localize "MQL.Edit.AddConclusion"}}
+    </button>
+    {{/unless}}
+  </fieldset>
+
   <fieldset class="mql-brief-set">
     <legend><i class="fa-solid fa-user-secret" inert></i> {{localize "MQL.Edit.Brief"}}</legend>
     {{#if briefLocked}}

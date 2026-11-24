@@ -18,7 +18,9 @@ export function snapshot(page) {
   return {
     status: source.status,
     urgent: Boolean(source.urgent),
-    objectives: foundry.utils.deepClone(source.objectives ?? [])
+    objectives: foundry.utils.deepClone(source.objectives ?? []),
+    conclusions: (source.conclusions ?? []).map(c => ({ id: c.id })),
+    clues: foundry.utils.deepClone(source.clues ?? [])
   };
 }
 

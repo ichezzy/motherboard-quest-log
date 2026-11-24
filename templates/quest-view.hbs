@@ -1,3 +1,13 @@
+{{#*inline "clueBody"}}
+{{#if html}}<span class="mql-clue-text">{{{html}}}</span>{{/if}}
+{{#if link}}
+{{#if link.canOpen}}
+<a class="mql-link" data-mql-action="open-link" data-uuid="{{link.uuid}}" data-tooltip="{{localize "MQL.View.OpenLink"}}"><i class="{{link.icon}}" inert></i> {{link.name}}</a>
+{{else}}
+<span class="mql-link"><i class="{{link.icon}}" inert></i> {{link.name}}</span>
+{{/if}}
+{{/if}}
+{{/inline}}
 <article class="mql-quest" data-status="{{status}}">
   <header class="mql-quest-head">
     {{#if giver.img}}
@@ -71,6 +81,49 @@
           <i class="fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" inert></i>
         </button>
         {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
+  {{#if clueSets.length}}
+  <section class="mql-clues mql-clues-gm">
+    <h4>{{localize "MQL.View.Clues"}}</h4>
+    {{#each clueSets}}
+    <div class="mql-conclusion">
+      <div class="mql-conclusion-head">
+        <i class="fa-solid fa-lightbulb" inert></i>
+        <span class="mql-conclusion-text">{{#if html}}{{{html}}}{{else}}<em>{{localize "MQL.View.ConclusionHidden"}}</em>{{/if}}</span>
+        <span class="mql-found-count {{#if few}}mql-few{{/if}}"
+              {{#if few}}data-tooltip="{{localize "MQL.Edit.FewClues"}}"{{/if}}>{{countLabel}}</span>
+      </div>
+      {{#if clues.length}}
+      <ul>
+        {{#each clues}}
+        <li class="mql-clue {{#unless found}}mql-unrevealed{{/unless}}">
+          <button type="button" class="mql-icon-button" data-mql-action="toggle-found" data-id="{{id}}"
+                  data-tooltip="{{localize "MQL.View.ToggleFound"}}" aria-label="{{localize "MQL.View.ToggleFound"}}">
+            <i class="{{#if found}}fa-solid fa-square-check{{else}}fa-regular fa-square{{/if}}" inert></i>
+          </button>
+          {{> clueBody}}
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  {{#if clues.length}}
+  <section class="mql-clues">
+    <h4>{{localize "MQL.View.Clues"}}</h4>
+    <ul>
+      {{#each clues}}
+      <li class="mql-clue">
+        <i class="mql-check fa-solid fa-magnifying-glass" inert></i>
+        {{> clueBody}}
       </li>
       {{/each}}
     </ul>

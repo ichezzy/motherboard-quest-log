@@ -34,3 +34,9 @@ export const BRIEF_FIELDS = ["hook", "wants", "approach", "twist", "choice", "re
 
 /** Same values as CONST.DOCUMENT_OWNERSHIP_LEVELS (kept here for the tests). */
 export const OWNERSHIP = { NONE: 0, OBSERVER: 2 };
+
+/** The Data Carrier module: shares the secret word; its pages and loot items can be clues. */
+export const DATA_CARRIER = "motherboard-data-carrier-journal";
+
+/** Three Clue Rule from the Quest Guide: at least three clues per conclusion. */
+export const MIN_CLUES = 3;

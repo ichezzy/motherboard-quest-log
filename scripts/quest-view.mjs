@@ -3,12 +3,16 @@
  * Both use the same template, the same context and the same buttons.
  */
 import { MODULE_ID, STATUSES, STATUS_ICONS, BRIEF_FIELDS } from "./constants.mjs";
-import { visibleObjectives, progress, plainToHtml, toggleObjective, isClosed, isUrgent } from "./logic.mjs";
-import { openBrief } from "./secret.mjs";
+import {
+  visibleObjectives, progress, plainToHtml, toggleObjective, toggleById, isClosed, isUrgent, clueGroups, foundClues
+} from "./logic.mjs";
+import { openSecrets } from "./secret.mjs";
+import { linkInfo, openLink } from "./clues.mjs";
 
 export const VIEW_TEMPLATE = `modules/${MODULE_ID}/templates/quest-view.hbs`;
 
 const L = key => game.i18n.localize(key);
+const F = (key, data) => game.i18n.format(key, data);
 
 /** GM brief sections opened in this session stay open when the view re-renders. */
 const openBriefs = new Set();
@@ -62,14 +66,15 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     revealLabel: L(o.revealed ? "MQL.View.HideObjective" : "MQL.View.RevealObjective")
   })));
 
-  // GM brief: only ever opened for the GM (encrypted in secret mode).
+  // GM brief and conclusions: only ever opened for the GM (encrypted in secret mode).
   const brief = [];
   let briefLocked = "";
+  let secrets = null;
   if (isGM) {
     try {
-      const plain = await openBrief(page);
+      secrets = await openSecrets(page);
       for (const key of BRIEF_FIELDS) {
-        const text = plain[key];
+        const text = secrets.brief[key];
         if (!text?.trim()) continue;
         brief.push({ key, label: L(`MQL.Quest.FIELDS.brief.${key}.label`), html: await enrich(plainToHtml(text), page) });
       }
@@ -77,6 +82,18 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
       briefLocked = err.message;
     }
   }
+
+  const clue = async c => ({ ...c, html: c.text?.trim() ? await enrich(plainToHtml(c.text), page) : "", link: linkInfo(c) });
+  // GM: every conclusion with all its clues. Players: found clues only, never the conclusion.
+  const clueSets = isGM
+    ? await Promise.all(clueGroups(secrets?.conclusions ?? system.conclusions, system.clues).map(async group => ({
+      ...group,
+      html: group.text?.trim() ? await enrich(plainToHtml(group.text), page) : "",
+      countLabel: F("MQL.View.FoundCount", { found: group.found, total: group.total }),
+      clues: await Promise.all(group.clues.map(clue))
+    })))
+    : [];
+  const clues = isGM ? [] : await Promise.all(foundClues(system.conclusions, system.clues).map(clue));
 
   const description = system.description ? await enrich(system.description, page, { secrets: isGM }) : "";
   const outcome = system.outcome?.trim() ? await enrich(plainToHtml(system.outcome), page) : "";
@@ -99,8 +116,10 @@ export async function questContext(page, { showTitle = true, headingLevel = 2 } 
     description,
     objectives,
     outcome,
+    clueSets,
+    clues,
     progress: progress(system.objectives, isGM),
-    hasContent: Boolean(description || objectives.length || outcome),
+    hasContent: Boolean(description || objectives.length || outcome || clues.length || clueSets.length),
     brief,
     briefLocked,
     briefOpen: openBriefs.has(page.uuid)
@@ -145,8 +164,13 @@ export function activateQuestView(root, page) {
     else openBriefs.delete(page.uuid);
   });
   on("open-giver", () => openGiver(page));
+  on("open-link", button => openLink(button.dataset.uuid));
 
   if (!game.user.isGM) return;
+
+  on("toggle-found", button => page.update({
+    "system.clues": toggleById(foundry.utils.deepClone(page._source.system.clues), button.dataset.id, "found")
+  }));
 
   on("reveal", () => setStatus(page, "active"));
   on("hide", () => setStatus(page, "hidden"));

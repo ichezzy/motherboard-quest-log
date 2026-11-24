@@ -2,7 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   tabOf, ownershipFor, visibleObjectives, progress, sortQuests, isUrgent,
-  addObjective, removeObjective, moveObjective, toggleObjective,
+  addObjective, removeObjective, moveObjective, toggleObjective, patchById,
+  blankConclusion, blankClue, removeConclusion, clueGroups, foundClues, clueLabel,
   questEvents, escapeHtml, plainToHtml, plainLabel
 } from "../scripts/logic.mjs";
 
@@ -105,6 +106,42 @@ test("events: editing text or unticking is silent", () => {
 
 test("events: reopening a closed quest is silent", () => {
   assert.deepEqual(questEvents({ status: "failed", objectives: [] }, { status: "active", objectives: [] }), []);
+});
+
+const clue = (id, conclusion, extra = {}) => ({ ...blankClue(id, conclusion), text: `Clue ${id}`, ...extra });
+
+test("clues: grouped by conclusion with counts, fewer than three is flagged", () => {
+  const conclusions = [{ id: "k1", text: "The trader is a Gutter" }, { id: "k2", text: "" }];
+  const clues = [
+    clue("a", "k1", { found: true }), clue("b", "k2"), clue("c", "k1"), clue("d", "k1", { found: true }), clue("x", "gone", { found: true })
+  ];
+  const groups = clueGroups(conclusions, clues);
+  assert.deepEqual(groups.map(g => [g.id, g.clues.map(c => c.id), g.found, g.total, g.few]), [
+    ["k1", ["a", "c", "d"], 2, 3, false],
+    ["k2", ["b"], 0, 1, true]
+  ]);
+  // Players: found clues of existing conclusions only.
+  assert.deepEqual(foundClues(conclusions, clues).map(c => c.id), ["a", "d"]);
+});
+
+test("clues: a conclusion goes together with its clues; entries can be patched", () => {
+  const state = { conclusions: [blankConclusion("k1"), blankConclusion("k2")], clues: [clue("a", "k1"), clue("b", "k2")] };
+  const after = removeConclusion(state, "k1");
+  assert.deepEqual(after.conclusions.map(c => c.id), ["k2"]);
+  assert.deepEqual(after.clues.map(c => c.id), ["b"]);
+  const patched = patchById(state.clues, "b", { uuid: "JournalEntry.x.JournalEntryPage.y", name: "Disc" });
+  assert.equal(patched[1].name, "Disc");
+  assert.equal(state.clues[1].name, "", "original list stays untouched");
+  assert.equal(clueLabel({ text: " ", name: "Disc" }), "Disc");
+});
+
+test("events: a found clue is announced, with the link name if it has no text", () => {
+  const conclusions = [{ id: "k1" }];
+  const before = { status: "active", objectives: [], conclusions, clues: [clue("a", "k1"), clue("b", "k1", { text: "", name: "Disc 7" })] };
+  const after = { ...before, clues: [clue("a", "k1", { found: true }), clue("b", "k1", { text: "", name: "Disc 7", found: true })] };
+  assert.deepEqual(questEvents(before, after), [{ kind: "clue", text: "Clue a" }, { kind: "clue", text: "Disc 7" }]);
+  assert.deepEqual(questEvents(after, before), [], "unticking is silent");
+  assert.deepEqual(questEvents({ ...before, status: "hidden" }, { ...after, status: "hidden" }), [], "silent while hidden");
 });
 
 test("text helpers", () => {
